@@ -58,8 +58,7 @@ This guide explains how to convert JPG, PNG, or GIF images into code suitable fo
 
 ---
 
-## Method 3: JPG/PNG to OLED using lcd-image-converter
-# 🖥️ OLED SSD1306 Design using Lopaka.app
+## Method 4: 🖥️ OLED SSD1306 Design using Lopaka.app
 
 This repository provides a step-by-step guide to designing a simple I2C-based OLED SSD1306 display interface using [Lopaka.app](https://lopaka.app). Ideal for projects involving microcontrollers like the STM32F103C8T6 (Blue Pill) or Arduino boards.
 
