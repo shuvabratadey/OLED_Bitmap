@@ -41,6 +41,10 @@ void setup() {
     for (;;)
       ;
   }
+  display.setTextColor(1);
+  display.setTextSize(2);
+  display.setTextWrap(false);
+
   if (!bme.begin())
   {
     Serial.println(F("BME680 failed"));
@@ -57,10 +61,6 @@ void setup() {
   bme.setPressureOversampling(BME680_OS_4X);
   bme.setIIRFilterSize(BME680_FILTER_SIZE_3);
   bme.setGasHeater(320, 150); // 320*C for 150 ms
-
-  display.setTextColor(1);
-  display.setTextSize(2);
-  display.setTextWrap(false);
 
   display.clearDisplay();
   display.display();
