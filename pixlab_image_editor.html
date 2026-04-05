@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-base: #0c0c0f; --bg-panel: #141418; --bg-elevated: #1c1c22; --bg-input: #222228;
+    --border: rgba(255,255,255,0.07); --border-mid: rgba(255,255,255,0.12); --border-accent: rgba(255,255,255,0.22);
+    --text-primary: #f0ede8; --text-secondary: #aaa8a2; --text-muted: #5a5a62;
+    --accent-gold: #e8c84a; --accent-gold-dim: rgba(232,200,74,0.12);
+    --accent-cyan: #4ac8e8; --accent-cyan-dim: rgba(74,200,232,0.1);
+    --accent-red: #e84a4a; --accent-red-dim: rgba(232,74,74,0.1);
+    --accent-green: #4ae888; --accent-green-dim: rgba(74,232,136,0.1);
+    --accent-purple: #a078e8; --accent-purple-dim: rgba(160,120,232,0.1);
+    --accent-slate: #8890a0; --accent-slate-dim: rgba(136,144,160,0.12);
+    --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg-base); color: var(--text-primary); min-height: 100vh; font-size: 15px; }
+  .header { background: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 0 28px; height: 58px; display: flex; align-items: center; gap: 20px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; letter-spacing: 0.12em; color: var(--accent-gold); display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 7px; height: 7px; background: var(--accent-gold); border-radius: 50%; animation: pulse 2.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+  .header-tag { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted); letter-spacing: 0.08em; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .app-body { display: grid; grid-template-columns: 1fr 320px; gap: 0; min-height: calc(100vh - 58px); }
+  .editor-panel { padding: 20px 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
+  .panel-title { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+  .toolbar { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: flex-end; }
+  .control-group { display: flex; flex-direction: column; gap: 6px; }
+  .control-group label { font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; }
+  input[type="file"] { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-secondary); background: var(--bg-input); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 7px 10px; cursor: pointer; transition: border-color .2s; width: 200px; }
+  input[type="file"]:hover { border-color: var(--border-accent); }
+  input[type="file"]::file-selector-button { background: var(--bg-elevated); border: 1px solid var(--border-mid); color: var(--text-primary); border-radius: var(--radius-sm); padding: 4px 12px; font-size: 12px; cursor: pointer; margin-right: 10px; font-family: 'DM Sans', sans-serif; transition: background .2s; }
+  input[type="file"]::file-selector-button:hover { background: var(--border-mid); }
+  input[type="number"], select { background: var(--bg-input); border: 1px solid var(--border-mid); color: var(--text-primary); padding: 8px 11px; border-radius: var(--radius-sm); font-family: 'Space Mono', monospace; font-size: 13px; width: 90px; outline: none; transition: border-color .2s; appearance: none; }
+  input[type="number"]:focus, select:focus { border-color: var(--accent-cyan); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888882' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; cursor: pointer; width: 130px; }
+  .btn { border: 1px solid transparent; padding: 9px 18px; border-radius: var(--radius-sm); font-weight: 500; cursor: pointer; transition: all .15s; font-size: 12px; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
+  .btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none !important; }
+  .btn:not(:disabled):hover { transform: translateY(-1px); }
+  .btn:not(:disabled):active { transform: translateY(0); }
+  .btn-action { background: var(--accent-gold-dim); border-color: rgba(232,200,74,.35); color: var(--accent-gold); }
+  .btn-action:not(:disabled):hover { background: rgba(232,200,74,.2); border-color: var(--accent-gold); }
+  .btn-convert { background: var(--accent-cyan-dim); border-color: rgba(74,200,232,.3); color: var(--accent-cyan); width: 100%; justify-content: center; padding: 11px; font-size: 13px; }
+  .btn-convert:not(:disabled):hover { background: rgba(74,200,232,.18); border-color: var(--accent-cyan); }
+  .btn-reset { background: var(--accent-red-dim); border-color: rgba(232,74,74,.25); color: var(--accent-red); }
+  .btn-reset:not(:disabled):hover { background: rgba(232,74,74,.18); border-color: var(--accent-red); }
+  .btn-history { background: var(--accent-slate-dim); border-color: rgba(136,144,160,.2); color: var(--accent-slate); }
+  .btn-history:not(:disabled):hover { background: rgba(136,144,160,.2); border-color: var(--accent-slate); }
+  .btn-green { background: var(--accent-green-dim); border-color: rgba(74,232,136,.25); color: var(--accent-green); }
+  .btn-green:not(:disabled):hover { background: rgba(74,232,136,.18); border-color: var(--accent-green); }
+  .btn-purple { background: var(--accent-purple-dim); border-color: rgba(160,120,232,.25); color: var(--accent-purple); }
+  .btn-purple:not(:disabled):hover { background: rgba(160,120,232,.18); border-color: var(--accent-purple); }
+  .action-strip { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .status-pill { margin-left: auto; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; letter-spacing: 0.04em; }
+  .canvas-stage { background: #080809; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: auto; display: flex; justify-content: center; align-items: flex-start; min-height: 420px; position: relative; cursor: move; }
+  .canvas-stage::before { content: 'LOAD AN IMAGE TO BEGIN'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.15em; color: var(--text-muted); pointer-events: none; opacity: 1; transition: opacity .3s; }
+  .canvas-stage.has-image::before { opacity: 0; }
+  #sourceCanvas { max-width: 100%; height: auto; border: none; display: block; }
+  .sidebar { padding: 20px 18px; display: flex; flex-direction: column; gap: 18px; background: var(--bg-panel); overflow-y: auto; }
+  .preview-frame { background: #080809; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 110px; position: relative; }
+  #previewCanvas { width: 100%; height: auto; display: block; image-rendering: pixelated; }
+  .sidebar-section { display: flex; flex-direction: column; gap: 10px; }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-label { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; min-width: 52px; }
+  .slider-value { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--accent-cyan); min-width: 34px; text-align: right; }
+  input[type="range"] { flex: 1; appearance: none; height: 3px; background: var(--bg-elevated); border-radius: 2px; outline: none; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--accent-cyan); cursor: pointer; transition: transform .15s; border: 2px solid var(--bg-panel); }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+  .toggle-row { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .toggle-row input[type="checkbox"] { display: none; }
+  .toggle-track { width: 36px; height: 20px; background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: 10px; position: relative; transition: background .2s, border-color .2s; flex-shrink: 0; }
+  .toggle-track::after { content: ''; width: 13px; height: 13px; background: var(--text-muted); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform .2s, background .2s; }
+  .toggle-row input:checked + .toggle-track { background: var(--accent-cyan-dim); border-color: var(--accent-cyan); }
+  .toggle-row input:checked + .toggle-track::after { transform: translateX(16px); background: var(--accent-cyan); }
+  .toggle-label { font-size: 13px; color: var(--text-secondary); }
+  .output-wrap { position: relative; }
+  textarea#output { width: 100%; height: 170px; background: #050507; color: rgba(74,200,232,.85); font-family: 'Space Mono', monospace; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 11px; line-height: 1.6; padding: 12px; resize: none; outline: none; transition: border-color .2s; }
+  textarea#output:focus { border-color: var(--border-mid); }
+  textarea#output::placeholder { color: var(--text-muted); font-size: 12px; }
+  .output-badge { position: absolute; top: 8px; right: 8px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--text-muted); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px; padding: 2px 8px; }
+  .divider { height: 1px; background: var(--border); margin: 0 -18px; }
+  .display-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .display-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 11px 8px; background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: var(--radius-md); cursor: pointer; transition: all .18s; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+  .display-btn:hover { border-color: var(--border-accent); color: var(--text-secondary); }
+  .display-btn.active { border-color: var(--accent-cyan); background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+  .display-icon { font-size: 20px; line-height: 1; }
+  .display-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+  .display-sub { font-size: 10px; letter-spacing: 0.04em; opacity: 0.7; }
+  .lock-row { display: flex; align-items: center; gap: 10px; }
+  .dim-inputs { display: flex; align-items: center; gap: 8px; }
+  .lock-btn { background: var(--bg-input); border: 1px solid var(--border-mid); color: var(--text-muted); border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all .2s; flex-shrink: 0; }
+  .lock-btn.locked { border-color: var(--accent-gold); color: var(--accent-gold); background: var(--accent-gold-dim); }
+  .dim-sep { font-family: 'Space Mono', monospace; font-size: 14px; color: var(--text-muted); }
+  .copy-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 5px 12px; font-size: 11px; font-family: 'Space Mono', monospace; cursor: pointer; transition: all .15s; }
+  .copy-btn:hover { border-color: var(--border-accent); color: var(--text-primary); }
+  .copy-btn.copied { border-color: var(--accent-green); color: var(--accent-green); background: var(--accent-green-dim); }
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .filter-chip { background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 7px 8px; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted); cursor: pointer; text-align: center; letter-spacing: 0.05em; transition: all .15s; }
+  .filter-chip:hover { border-color: var(--border-accent); color: var(--text-secondary); }
+  .filter-chip.active { border-color: var(--accent-purple); background: var(--accent-purple-dim); color: var(--accent-purple); }
+  .output-controls { display: flex; align-items: center; justify-content: space-between; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-accent); }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo"><div class="logo-dot"></div>PIXLAB</div>
+  <span class="header-tag">IMAGE PROCESSOR v2</span>
+</header>
+
+<div class="app-body">
+  <div class="editor-panel">
+
+    <div>
+      <p class="panel-title">Input & Transform</p>
+      <div class="toolbar">
+        <div class="control-group">
+          <label>Source File</label>
+          <input type="file" id="fileInput" accept="image/*">
+        </div>
+        <div class="control-group">
+          <label>Mode</label>
+          <select id="mode">
+            <option value="resize">Full Resize</option>
+            <option value="crop">Crop Area</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Dimensions</label>
+          <div class="dim-inputs">
+            <input type="number" id="targetW" style="width:80px" placeholder="W">
+            <div class="lock-btn locked" id="lockBtn" title="Lock aspect ratio">⛓</div>
+            <input type="number" id="targetH" style="width:80px" placeholder="H">
+          </div>
+        </div>
+        <button class="btn btn-action" id="actionBtn">▶ APPLY</button>
+      </div>
+    </div>
+
+    <div class="action-strip">
+      <button class="btn btn-history" id="undoBtn" disabled>↩ UNDO</button>
+      <button class="btn btn-history" id="redoBtn" disabled>↪ REDO</button>
+      <button class="btn btn-green" id="flipHBtn">↔ FLIP H</button>
+      <button class="btn btn-green" id="flipVBtn">↕ FLIP V</button>
+      <button class="btn btn-purple" id="rotateBtn">↻ ROTATE 90°</button>
+      <button class="btn btn-reset" id="resetBtn">✕ RESET</button>
+      <span id="imgDim" class="status-pill">no image</span>
+    </div>
+
+    <div class="canvas-stage" id="canvasStage">
+      <canvas id="sourceCanvas"></canvas>
+    </div>
+
+  </div>
+
+  <div class="sidebar">
+
+    <div>
+      <p class="panel-title">Preview</p>
+      <div class="preview-frame">
+        <canvas id="previewCanvas"></canvas>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sidebar-section">
+      <p class="panel-title">Display Target</p>
+      <div class="display-toggle-group">
+        <button class="display-btn active" id="btnOled" data-mode="oled">
+          <span class="display-icon">◐</span>
+          <span class="display-label">OLED</span>
+          <span class="display-sub">1-bit B&W</span>
+        </button>
+        <button class="display-btn" id="btnTft" data-mode="tft">
+          <span class="display-icon">▣</span>
+          <span class="display-label">TFT</span>
+          <span class="display-sub">RGB565 Color</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sidebar-section" id="thresholdSection">
+      <p class="panel-title">Threshold</p>
+      <div class="slider-row">
+        <span class="slider-label">Level</span>
+        <input type="range" id="threshold" min="0" max="255" value="128">
+        <span class="slider-value" id="thVal">128</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section" id="filterSection">
+      <p class="panel-title">Adjustments</p>
+      <div class="slider-row">
+        <span class="slider-label">Bright</span>
+        <input type="range" id="brightness" min="-100" max="100" value="0">
+        <span class="slider-value" id="brVal">0</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Contrast</span>
+        <input type="range" id="contrast" min="-100" max="100" value="0">
+        <span class="slider-value" id="coVal">0</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Gamma</span>
+        <input type="range" id="gamma" min="10" max="300" value="100" step="5">
+        <span class="slider-value" id="gaVal">1.0</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section" id="oledOptions">
+      <p class="panel-title">Dither & Effects</p>
+      <div class="filter-grid">
+        <div class="filter-chip active" id="chipNone" data-dither="none">NONE</div>
+        <div class="filter-chip" id="chipFloyd" data-dither="floyd">FLOYD-S</div>
+        <div class="filter-chip" id="chipOrder" data-dither="ordered">ORDERED</div>
+        <div class="filter-chip" id="chipAtk" data-dither="atkinson">ATKINSON</div>
+      </div>
+      <label class="toggle-row" style="margin-top:4px">
+        <input type="checkbox" id="invert">
+        <div class="toggle-track"></div>
+        <span class="toggle-label">Invert Pixels</span>
+      </label>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="sidebar-section">
+      <button class="btn btn-convert" id="convertBtn">⬡ CONVERT TO C ARRAY</button>
+      <div class="output-controls">
+        <p class="panel-title" style="margin:0">C Output</p>
+        <button class="copy-btn" id="copyBtn">COPY</button>
+      </div>
+      <div class="output-wrap">
+        <textarea id="output" readonly placeholder="// C array output will appear here..."></textarea>
+        <span class="output-badge">C OUTPUT</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const sourceCanvas = document.getElementById('sourceCanvas');
+const sCtx = sourceCanvas.getContext('2d');
+const previewCanvas = document.getElementById('previewCanvas');
+const pCtx = previewCanvas.getContext('2d');
+const canvasStage = document.getElementById('canvasStage');
+
+let originalImg = null, currentImg = null;
+let historyStack = [], redoStack = [];
+let isDragging = false;
+let crop = { x: 0, y: 0, w: 128, h: 64 };
+let startMouse = { x: 0, y: 0 };
+let displayMode = 'oled';
+let aspectRatio = null;
+let isLocked = true;
+let activeDither = 'none';
+let isUpdatingW = false, isUpdatingH = false;
+
+// ── Aspect Lock ──
+const lockBtn = document.getElementById('lockBtn');
+lockBtn.onclick = () => {
+  isLocked = !isLocked;
+  lockBtn.classList.toggle('locked', isLocked);
+  lockBtn.textContent = isLocked ? '⛓' : '✂';
+  if (isLocked && currentImg) {
+    const w = parseInt(document.getElementById('targetW').value)||currentImg.width;
+    const h = parseInt(document.getElementById('targetH').value)||currentImg.height;
+    aspectRatio = w / h;
+  }
+};
+
+// ── Display Mode ──
+document.getElementById('btnOled').onclick = () => setDisplayMode('oled');
+document.getElementById('btnTft').onclick  = () => setDisplayMode('tft');
+function setDisplayMode(mode) {
+  displayMode = mode;
+  document.getElementById('btnOled').classList.toggle('active', mode === 'oled');
+  document.getElementById('btnTft').classList.toggle('active',  mode === 'tft');
+  document.getElementById('thresholdSection').style.display = mode === 'oled' ? '' : 'none';
+  document.getElementById('oledOptions').style.display      = mode === 'oled' ? '' : 'none';
+  document.getElementById('convertBtn').textContent =
+    mode === 'tft' ? '▣ CONVERT — RGB565' : '⬡ CONVERT — 1-bit';
+}
+
+// ── Dither chips ──
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    activeDither = chip.dataset.dither;
+  };
+});
+
+// ── File Load ──
+document.getElementById('fileInput').onchange = e => {
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      originalImg = tempImg; currentImg = tempImg;
+      historyStack = [tempImg]; redoStack = [];
+      canvasStage.classList.add('has-image');
+      initDimensions(tempImg.width, tempImg.height);
+      updateWorkspace();
+    };
+    tempImg.src = evt.target.result;
+  };
+  reader.readAsDataURL(e.target.files[0]);
+};
+
+function initDimensions(w, h) {
+  document.getElementById('targetW').value = w;
+  document.getElementById('targetH').value = h;
+  aspectRatio = w / h;
+  resetCropBox(w, h);
+}
+
+function resetCropBox(w, h) {
+  crop.w = Math.min(w, parseInt(document.getElementById('targetW').value)||128);
+  crop.h = Math.min(h, parseInt(document.getElementById('targetH').value)||64);
+  crop.x = Math.max(0, Math.min(crop.x, w - crop.w));
+  crop.y = Math.max(0, Math.min(crop.y, h - crop.h));
+}
+
+function updateWorkspace() {
+  if (!currentImg) return;
+  const w = currentImg.width, h = currentImg.height;
+  sourceCanvas.width = w; sourceCanvas.height = h;
+  document.getElementById('imgDim').innerText = `${w} × ${h} px`;
+  sCtx.drawImage(currentImg, 0, 0);
+  if (document.getElementById('mode').value === 'crop') {
+    sCtx.fillStyle = "rgba(0,0,0,0.65)";
+    sCtx.fillRect(0,0,w,crop.y); sCtx.fillRect(0,crop.y+crop.h,w,h-(crop.y+crop.h));
+    sCtx.fillRect(0,crop.y,crop.x,crop.h); sCtx.fillRect(crop.x+crop.w,crop.y,w-(crop.x+crop.w),crop.h);
+    sCtx.strokeStyle = "rgba(232,200,74,0.9)"; sCtx.lineWidth = 1.5;
+    sCtx.strokeRect(crop.x,crop.y,crop.w,crop.h);
+    const cs = 9; sCtx.fillStyle = "#e8c84a";
+    [[crop.x,crop.y],[crop.x+crop.w-cs,crop.y],[crop.x,crop.y+crop.h-cs],[crop.x+crop.w-cs,crop.y+crop.h-cs]].forEach(([cx,cy]) => sCtx.fillRect(cx,cy,cs,cs));
+    sCtx.strokeStyle = "rgba(232,200,74,0.18)"; sCtx.lineWidth = 0.75;
+    for (let i=1;i<3;i++) {
+      sCtx.beginPath(); sCtx.moveTo(crop.x+(crop.w/3)*i,crop.y); sCtx.lineTo(crop.x+(crop.w/3)*i,crop.y+crop.h); sCtx.stroke();
+      sCtx.beginPath(); sCtx.moveTo(crop.x,crop.y+(crop.h/3)*i); sCtx.lineTo(crop.x+crop.w,crop.y+(crop.h/3)*i); sCtx.stroke();
+    }
+  }
+  updateHistoryButtons();
+}
+
+// ── Dimension inputs with aspect lock ──
+document.getElementById('targetW').oninput = () => {
+  if (isUpdatingH) return;
+  const w = parseInt(document.getElementById('targetW').value)||1;
+  if (isLocked && aspectRatio && currentImg) {
+    isUpdatingW = true;
+    const newH = Math.round(w / aspectRatio);
+    document.getElementById('targetH').value = newH;
+    isUpdatingW = false;
+  }
+  if (!currentImg) return;
+  crop.w = Math.min(w, currentImg.width);
+  crop.x = Math.max(0, Math.min(crop.x, currentImg.width - crop.w));
+  updateWorkspace();
+};
+
+document.getElementById('targetH').oninput = () => {
+  if (isUpdatingW) return;
+  const h = parseInt(document.getElementById('targetH').value)||1;
+  if (isLocked && aspectRatio && currentImg) {
+    isUpdatingH = true;
+    const newW = Math.round(h * aspectRatio);
+    document.getElementById('targetW').value = newW;
+    isUpdatingH = false;
+  }
+  if (!currentImg) return;
+  crop.h = Math.min(h, currentImg.height);
+  crop.y = Math.max(0, Math.min(crop.y, currentImg.height - crop.h));
+  updateWorkspace();
+};
+
+// ── Apply ──
+document.getElementById('actionBtn').onclick = () => {
+  if (!currentImg) return;
+  const mode = document.getElementById('mode').value;
+  const tw = parseInt(document.getElementById('targetW').value);
+  const th = parseInt(document.getElementById('targetH').value);
+  const ac = document.createElement('canvas');
+  ac.width = tw; ac.height = th;
+  const aCtx = ac.getContext('2d');
+  if (mode === 'crop') aCtx.drawImage(currentImg, crop.x, crop.y, crop.w, crop.h, 0, 0, tw, th);
+  else aCtx.drawImage(currentImg, 0, 0, currentImg.width, currentImg.height, 0, 0, tw, th);
+  const newImg = new Image();
+  newImg.onload = () => { historyStack.push(newImg); redoStack = []; currentImg = newImg; initDimensions(newImg.width, newImg.height); updateWorkspace(); };
+  newImg.src = ac.toDataURL();
+};
+
+// ── Flip H ──
+document.getElementById('flipHBtn').onclick = () => {
+  if (!currentImg) return;
+  const ac = document.createElement('canvas');
+  ac.width = currentImg.width; ac.height = currentImg.height;
+  const aCtx = ac.getContext('2d');
+  aCtx.translate(ac.width, 0); aCtx.scale(-1, 1);
+  aCtx.drawImage(currentImg, 0, 0);
+  pushImage(ac);
+};
+
+// ── Flip V ──
+document.getElementById('flipVBtn').onclick = () => {
+  if (!currentImg) return;
+  const ac = document.createElement('canvas');
+  ac.width = currentImg.width; ac.height = currentImg.height;
+  const aCtx = ac.getContext('2d');
+  aCtx.translate(0, ac.height); aCtx.scale(1, -1);
+  aCtx.drawImage(currentImg, 0, 0);
+  pushImage(ac);
+};
+
+// ── Rotate 90 ──
+document.getElementById('rotateBtn').onclick = () => {
+  if (!currentImg) return;
+  const ac = document.createElement('canvas');
+  ac.width = currentImg.height; ac.height = currentImg.width;
+  const aCtx = ac.getContext('2d');
+  aCtx.translate(ac.width, 0); aCtx.rotate(Math.PI/2);
+  aCtx.drawImage(currentImg, 0, 0);
+  pushImage(ac);
+};
+
+function pushImage(canvas) {
+  const newImg = new Image();
+  newImg.onload = () => { historyStack.push(newImg); redoStack = []; currentImg = newImg; initDimensions(newImg.width, newImg.height); updateWorkspace(); };
+  newImg.src = canvas.toDataURL();
+}
+
+// ── Undo / Redo ──
+document.getElementById('undoBtn').onclick = () => {
+  if (historyStack.length > 1) { redoStack.push(historyStack.pop()); currentImg = historyStack[historyStack.length-1]; initDimensions(currentImg.width, currentImg.height); updateWorkspace(); }
+};
+document.getElementById('redoBtn').onclick = () => {
+  if (redoStack.length > 0) { const img = redoStack.pop(); historyStack.push(img); currentImg = img; initDimensions(currentImg.width, currentImg.height); updateWorkspace(); }
+};
+document.getElementById('resetBtn').onclick = () => {
+  if (!originalImg) return;
+  currentImg = originalImg; historyStack = [originalImg]; redoStack = [];
+  initDimensions(originalImg.width, originalImg.height); updateWorkspace();
+};
+function updateHistoryButtons() {
+  document.getElementById('undoBtn').disabled = historyStack.length <= 1;
+  document.getElementById('redoBtn').disabled = redoStack.length === 0;
+}
+
+// ── Sliders ──
+document.getElementById('threshold').oninput = e => document.getElementById('thVal').innerText = e.target.value;
+document.getElementById('brightness').oninput = e => document.getElementById('brVal').innerText = e.target.value;
+document.getElementById('contrast').oninput = e => document.getElementById('coVal').innerText = e.target.value;
+document.getElementById('gamma').oninput = e => document.getElementById('gaVal').innerText = (e.target.value/100).toFixed(1);
+
+// ── Convert ──
+document.getElementById('convertBtn').onclick = () => {
+  if (!currentImg) return;
+  const tw = currentImg.width, th = currentImg.height;
+  previewCanvas.width = tw; previewCanvas.height = th;
+  pCtx.drawImage(currentImg, 0, 0);
+  let imgData = pCtx.getImageData(0, 0, tw, th);
+  let d = imgData.data;
+
+  // Apply brightness/contrast/gamma
+  const bright = parseInt(document.getElementById('brightness').value);
+  const cont = parseInt(document.getElementById('contrast').value);
+  const gammaVal = parseInt(document.getElementById('gamma').value)/100;
+  const factor = (259*(cont+255))/(255*(259-cont));
+  const gammaLUT = new Uint8Array(256);
+  for (let i=0;i<256;i++) gammaLUT[i] = Math.min(255, Math.round(Math.pow(i/255, 1/gammaVal)*255));
+
+  for (let i=0;i<d.length;i+=4) {
+    let r=d[i], g=d[i+1], b=d[i+2];
+    r = gammaLUT[r]; g = gammaLUT[g]; b = gammaLUT[b];
+    r = Math.min(255,Math.max(0,r+bright)); g = Math.min(255,Math.max(0,g+bright)); b = Math.min(255,Math.max(0,b+bright));
+    r = Math.min(255,Math.max(0,factor*(r-128)+128)); g = Math.min(255,Math.max(0,factor*(g-128)+128)); b = Math.min(255,Math.max(0,factor*(b-128)+128));
+    d[i]=r; d[i+1]=g; d[i+2]=b;
+  }
+
+  if (displayMode === 'tft') {
+    let output = `// TFT Color — RGB565\n// ${tw}x${th} (${tw*th*2} bytes)\nconst unsigned short img_${tw}x${th}[] = {\n`;
+    for (let y=0;y<th;y++) {
+      let row = '  ';
+      for (let x=0;x<tw;x++) {
+        const i=(y*tw+x)*4;
+        const rgb565=((d[i]>>3)<<11)|((d[i+1]>>2)<<5)|(d[i+2]>>3);
+        row += '0x'+rgb565.toString(16).toUpperCase().padStart(4,'0')+', ';
+      }
+      output += row+'\n';
+    }
+    document.getElementById('output').value = output+'};';
+    pCtx.putImageData(imgData, 0, 0);
+  } else {
+    const threshold = parseInt(document.getElementById('threshold').value);
+    const invert = document.getElementById('invert').checked;
+    const grayArr = new Float32Array(tw*th);
+    for (let i=0;i<tw*th;i++) grayArr[i]=(d[i*4]+d[i*4+1]+d[i*4+2])/3;
+    const bwArr = new Uint8Array(tw*th);
+
+    if (activeDither === 'floyd') {
+      const err = new Float32Array(tw*th);
+      for (let y=0;y<th;y++) for (let x=0;x<tw;x++) {
+        const idx=y*tw+x; let gray=grayArr[idx]+err[idx];
+        const px=gray<threshold?0:255; bwArr[idx]=px;
+        const e=gray-px;
+        if(x+1<tw) err[idx+1]+=e*7/16;
+        if(y+1<th){if(x>0)err[idx+tw-1]+=e*3/16; err[idx+tw]+=e*5/16; if(x+1<tw)err[idx+tw+1]+=e*1/16;}
+      }
+    } else if (activeDither === 'ordered') {
+      const M=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+      for (let y=0;y<th;y++) for (let x=0;x<tw;x++) {
+        const t=(M[(y%4)*4+(x%4)]/16)*255; bwArr[y*tw+x]=grayArr[y*tw+x]>t?255:0;
+      }
+    } else if (activeDither === 'atkinson') {
+      const err2 = new Float32Array(tw*th);
+      for (let y=0;y<th;y++) for (let x=0;x<tw;x++) {
+        const idx=y*tw+x; let gray=grayArr[idx]+err2[idx];
+        const px=gray<threshold?0:255; bwArr[idx]=px;
+        const e=(gray-px)/8;
+        if(x+1<tw) err2[idx+1]+=e; if(x+2<tw) err2[idx+2]+=e;
+        if(y+1<th){if(x>0)err2[idx+tw-1]+=e; err2[idx+tw]+=e; if(x+1<tw)err2[idx+tw+1]+=e;}
+        if(y+2<th) err2[idx+tw*2]+=e;
+      }
+    } else {
+      for (let i=0;i<tw*th;i++) bwArr[i]=grayArr[i]<threshold?0:255;
+    }
+
+    let output = `// OLED 1-bit packed (${activeDither==='none'?'threshold':activeDither+' dither'})\n// ${tw}x${th}\nconst unsigned char img_${tw}x${th}[] = {\n`;
+    for (let y=0;y<th;y++) {
+      let byte=0, bits=0, row='  ';
+      for (let x=0;x<tw;x++) {
+        let pixel=bwArr[y*tw+x]<128?1:0;
+        if(invert) pixel=pixel?0:1;
+        const i=(y*tw+x)*4;
+        d[i]=d[i+1]=d[i+2]=pixel?0:255;
+        byte=(byte<<1)|pixel; bits++;
+        if(bits===8){row+='0x'+byte.toString(16).padStart(2,'0')+', '; byte=0; bits=0;}
+      }
+      if(bits>0){byte<<=(8-bits); row+='0x'+byte.toString(16).padStart(2,'0')+', ';}
+      output+=row+'\n';
+    }
+    pCtx.putImageData(imgData, 0, 0);
+    document.getElementById('output').value = output+'};';
+  }
+};
+
+// ── Copy ──
+document.getElementById('copyBtn').onclick = () => {
+  const txt = document.getElementById('output').value;
+  if (!txt || txt.startsWith('//') === false && !txt.length) return;
+  navigator.clipboard.writeText(txt).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'COPIED!'; btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'COPY'; btn.classList.remove('copied'); }, 2000);
+  });
+};
+
+// ── Crop drag ──
+sourceCanvas.onmousedown = e => {
+  if (document.getElementById('mode').value !== 'crop') return;
+  const r = sourceCanvas.getBoundingClientRect();
+  const scaleX = currentImg.width/r.width, scaleY = currentImg.height/r.height;
+  const mx=(e.clientX-r.left)*scaleX, my=(e.clientY-r.top)*scaleY;
+  if (mx>=crop.x&&mx<=crop.x+crop.w&&my>=crop.y&&my<=crop.y+crop.h) { isDragging=true; startMouse={x:mx-crop.x,y:my-crop.y}; }
+};
+window.onmousemove = e => {
+  if (!isDragging||!currentImg) return;
+  const r=sourceCanvas.getBoundingClientRect();
+  const scaleX=currentImg.width/r.width, scaleY=currentImg.height/r.height;
+  const mx=(e.clientX-r.left)*scaleX, my=(e.clientY-r.top)*scaleY;
+  crop.x=Math.max(0,Math.min(mx-startMouse.x,currentImg.width-crop.w));
+  crop.y=Math.max(0,Math.min(my-startMouse.y,currentImg.height-crop.h));
+  updateWorkspace();
+};
+window.onmouseup = () => isDragging = false;
+document.getElementById('mode').onchange = updateWorkspace;
+</script>
+</body>
+</html>
