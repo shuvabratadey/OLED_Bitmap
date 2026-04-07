@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Pixel Toolkit</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-base: #0c0c0f; --bg-panel: #141418; --bg-elevated: #1c1c22; --bg-input: #222228;
+    --border: rgba(255,255,255,0.07); --border-mid: rgba(255,255,255,0.12); --border-accent: rgba(255,255,255,0.22);
+    --text-primary: #f0ede8; --text-secondary: #aaa8a2; --text-muted: #5a5a62;
+    --accent-gold: #e8c84a; --accent-gold-dim: rgba(232,200,74,0.12);
+    --accent-cyan: #4ac8e8; --accent-cyan-dim: rgba(74,200,232,0.1);
+    --accent-red: #e84a4a; --accent-red-dim: rgba(232,74,74,0.1);
+    --accent-green: #4ae888; --accent-green-dim: rgba(74,232,136,0.1);
+    --accent-purple: #a078e8; --accent-purple-dim: rgba(160,120,232,0.1);
+    --accent-slate: #8890a0; --accent-slate-dim: rgba(136,144,160,0.12);
+    --accent-orange: #e8984a; --accent-orange-dim: rgba(232,152,74,0.12);
+    --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg-base); color: var(--text-primary); min-height: 100vh; font-size: 15px; }
+
+  .app-header { background: var(--bg-panel); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 200; }
+  .header-top { padding: 0 28px; height: 58px; display: flex; align-items: center; gap: 20px; border-bottom: 1px solid var(--border); }
+  .logo { font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; letter-spacing: 0.12em; color: var(--accent-gold); display: flex; align-items: center; gap: 8px; }
+  .logo-dot { width: 7px; height: 7px; background: var(--accent-gold); border-radius: 50%; animation: pulse 2.5s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.75)} }
+  .header-tag { font-size: 13px; font-family: 'Space Mono', monospace; color: #0088cc; letter-spacing: 0.08em; padding: 4px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+  .tab-bar { display: flex; padding: 0 28px; gap: 0; }
+  .tab-btn { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; padding: 14px 22px; background: none; border: none; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; display: flex; align-items: center; gap: 8px; }
+  .tab-btn:hover { color: var(--text-secondary); }
+  .tab-btn.active { color: var(--accent-gold); border-bottom-color: var(--accent-gold); }
+  .tab-btn .tab-icon { font-size: 14px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .panel-title { font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+  .btn { border: 1px solid transparent; padding: 9px 18px; border-radius: var(--radius-sm); font-weight: 500; cursor: pointer; transition: all .15s; font-size: 12px; font-family: 'Space Mono', monospace; letter-spacing: 0.05em; white-space: nowrap; display: inline-flex; align-items: center; gap: 7px; }
+  .btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none !important; }
+  .btn:not(:disabled):hover { transform: translateY(-1px); }
+  .btn:not(:disabled):active { transform: translateY(0); }
+  .btn-action { background: var(--accent-gold-dim); border-color: rgba(232,200,74,.35); color: var(--accent-gold); }
+  .btn-action:not(:disabled):hover { background: rgba(232,200,74,.2); border-color: var(--accent-gold); }
+  .btn-convert { background: var(--accent-cyan-dim); border-color: rgba(74,200,232,.3); color: var(--accent-cyan); width: 100%; justify-content: center; padding: 11px; font-size: 13px; }
+  .btn-convert:not(:disabled):hover { background: rgba(74,200,232,.18); border-color: var(--accent-cyan); }
+  .btn-reset { background: var(--accent-red-dim); border-color: rgba(232,74,74,.25); color: var(--accent-red); }
+  .btn-reset:not(:disabled):hover { background: rgba(232,74,74,.18); border-color: var(--accent-red); }
+  .btn-history { background: var(--accent-slate-dim); border-color: rgba(136,144,160,.2); color: var(--accent-slate); }
+  .btn-history:not(:disabled):hover { background: rgba(136,144,160,.2); border-color: var(--accent-slate); }
+  .btn-green { background: var(--accent-green-dim); border-color: rgba(74,232,136,.25); color: var(--accent-green); }
+  .btn-green:not(:disabled):hover { background: rgba(74,232,136,.18); border-color: var(--accent-green); }
+  .btn-purple { background: var(--accent-purple-dim); border-color: rgba(160,120,232,.25); color: var(--accent-purple); }
+  .btn-purple:not(:disabled):hover { background: rgba(160,120,232,.18); border-color: var(--accent-purple); }
+  .btn-orange { background: var(--accent-orange-dim); border-color: rgba(232,152,74,.3); color: var(--accent-orange); }
+  .btn-orange:not(:disabled):hover { background: rgba(232,152,74,.18); border-color: var(--accent-orange); }
+  input[type="file"] { font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text-secondary); background: var(--bg-input); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 7px 10px; cursor: pointer; transition: border-color .2s; }
+  input[type="file"]:hover { border-color: var(--border-accent); }
+  input[type="file"]::file-selector-button { background: var(--bg-elevated); border: 1px solid var(--border-mid); color: var(--text-primary); border-radius: var(--radius-sm); padding: 4px 12px; font-size: 12px; cursor: pointer; margin-right: 10px; font-family: 'DM Sans', sans-serif; transition: background .2s; }
+  input[type="file"]::file-selector-button:hover { background: var(--border-mid); }
+  input[type="number"], select { background: var(--bg-input); border: 1px solid var(--border-mid); color: var(--text-primary); padding: 8px 11px; border-radius: var(--radius-sm); font-family: 'Space Mono', monospace; font-size: 13px; outline: none; transition: border-color .2s; appearance: none; }
+  input[type="number"]:focus, select:focus { border-color: var(--accent-cyan); }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888882' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; cursor: pointer; }
+  input[type="range"] { flex: 1; appearance: none; height: 3px; background: var(--bg-elevated); border-radius: 2px; outline: none; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { appearance: none; width: 15px; height: 15px; border-radius: 50%; background: var(--accent-cyan); cursor: pointer; transition: transform .15s; border: 2px solid var(--bg-panel); }
+  input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.25); }
+  .control-group { display: flex; flex-direction: column; gap: 6px; }
+  .control-group label { font-size: 11px; font-family: 'Space Mono', monospace; letter-spacing: 0.08em; color: var(--text-muted); text-transform: uppercase; }
+  .status-pill { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 20px; padding: 5px 14px; letter-spacing: 0.04em; }
+  .copy-btn { background: var(--bg-elevated); border: 1px solid var(--border); color: var(--text-secondary); border-radius: var(--radius-sm); padding: 5px 12px; font-size: 11px; font-family: 'Space Mono', monospace; cursor: pointer; transition: all .15s; }
+  .copy-btn:hover { border-color: var(--border-accent); color: var(--text-primary); }
+  .copy-btn.copied { border-color: var(--accent-green); color: var(--accent-green); background: var(--accent-green-dim); }
+  .divider { height: 1px; background: var(--border); }
+  .slider-row { display: flex; align-items: center; gap: 10px; }
+  .slider-label { font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted); letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; min-width: 52px; }
+  .slider-value { font-family: 'Space Mono', monospace; font-size: 13px; color: var(--accent-cyan); min-width: 34px; text-align: right; }
+  .toggle-row { display: flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+  .toggle-row input[type="checkbox"] { display: none; }
+  .toggle-track { width: 36px; height: 20px; background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: 10px; position: relative; transition: background .2s, border-color .2s; flex-shrink: 0; }
+  .toggle-track::after { content: ''; width: 13px; height: 13px; background: var(--text-muted); border-radius: 50%; position: absolute; top: 3px; left: 3px; transition: transform .2s, background .2s; }
+  .toggle-row input:checked + .toggle-track { background: var(--accent-cyan-dim); border-color: var(--accent-cyan); }
+  .toggle-row input:checked + .toggle-track::after { transform: translateX(16px); background: var(--accent-cyan); }
+  .toggle-label { font-size: 13px; color: var(--text-secondary); }
+  .output-wrap { position: relative; }
+  textarea.code-output { width: 100%; background: #050507; color: rgba(74,200,232,.85); font-family: 'Space Mono', monospace; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 11px; line-height: 1.6; padding: 12px; resize: none; outline: none; transition: border-color .2s; }
+  textarea.code-output:focus { border-color: var(--border-mid); }
+  textarea.code-output::placeholder { color: var(--text-muted); font-size: 12px; }
+  .output-badge { position: absolute; top: 8px; right: 8px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 0.08em; color: var(--text-muted); background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 3px; padding: 2px 8px; }
+  .output-controls { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .filter-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .filter-chip { background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 7px 8px; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted); cursor: pointer; text-align: center; letter-spacing: 0.05em; transition: all .15s; }
+  .filter-chip:hover { border-color: var(--border-accent); color: var(--text-secondary); }
+  .filter-chip.active { border-color: var(--accent-purple); background: var(--accent-purple-dim); color: var(--accent-purple); }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border-mid); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-accent); }
+
+  /* ── TAB 1 — IMAGE EDITOR ── */
+  .t1-body { display: grid; grid-template-columns: 1fr 320px; gap: 0; min-height: calc(100vh - 100px); }
+  .t1-editor { padding: 20px 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; }
+  .toolbar { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: flex-end; }
+  .action-strip { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .canvas-stage { background: #080809; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: auto; display: flex; justify-content: center; align-items: flex-start; min-height: 420px; position: relative; cursor: move; }
+  .canvas-stage::before { content: 'LOAD AN IMAGE TO BEGIN'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.15em; color: var(--text-muted); pointer-events: none; opacity: 1; transition: opacity .3s; }
+  .canvas-stage.has-image::before { opacity: 0; }
+  .t1-sidebar { padding: 20px 18px; display: flex; flex-direction: column; gap: 18px; background: var(--bg-panel); overflow-y: auto; }
+  .preview-frame { background: #080809; border: 1px solid var(--border); border-radius: var(--radius-md); overflow: hidden; display: flex; justify-content: center; align-items: center; min-height: 110px; }
+  .display-toggle-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .display-btn { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 11px 8px; background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: var(--radius-md); cursor: pointer; transition: all .18s; color: var(--text-muted); font-family: 'Space Mono', monospace; }
+  .display-btn:hover { border-color: var(--border-accent); color: var(--text-secondary); }
+  .display-btn.active { border-color: var(--accent-cyan); background: var(--accent-cyan-dim); color: var(--accent-cyan); }
+  .display-icon { font-size: 20px; line-height: 1; }
+  .display-label { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; }
+  .display-sub { font-size: 10px; letter-spacing: 0.04em; opacity: 0.7; }
+  .dim-inputs { display: flex; align-items: center; gap: 8px; }
+  .lock-btn { background: var(--bg-input); border: 1px solid var(--border-mid); color: var(--text-muted); border-radius: var(--radius-sm); width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; transition: all .2s; flex-shrink: 0; }
+  .lock-btn.locked { border-color: var(--accent-gold); color: var(--accent-gold); background: var(--accent-gold-dim); }
+  .sidebar-section { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── TAB 2 — GIF EDITOR (Image-editor style) ── */
+  .t2-body { display: grid; grid-template-columns: 1fr 320px; gap: 0; min-height: calc(100vh - 100px); }
+  .t2-editor { padding: 20px 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 14px; overflow-y: auto; }
+  .t2-sidebar { padding: 20px 18px; display: flex; flex-direction: column; gap: 18px; background: var(--bg-panel); overflow-y: auto; }
+  .gif-stage { background: #080809; border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: auto; display: flex; justify-content: center; align-items: flex-start; min-height: 360px; position: relative; cursor: move; }
+  .gif-stage::before { content: 'LOAD A GIF TO BEGIN'; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-family: 'Space Mono', monospace; font-size: 12px; letter-spacing: 0.15em; color: var(--text-muted); pointer-events: none; opacity: 1; transition: opacity .3s; }
+  .gif-stage.has-gif::before { opacity: 0; }
+  #t2_sourceCanvas { display: block; image-rendering: pixelated; cursor: move; }
+  .frames-strip { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .frames-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; min-height: 80px; align-items: center; }
+  .frame-thumb { flex-shrink: 0; border: 2px solid var(--border-mid); border-radius: var(--radius-sm); overflow: hidden; cursor: pointer; transition: border-color .15s; position: relative; }
+  .frame-thumb:hover { border-color: var(--border-accent); }
+  .frame-thumb.selected { border-color: var(--accent-gold); }
+  .frame-thumb canvas { display: block; width: 64px; height: 64px; image-rendering: pixelated; }
+  .frame-idx { position: absolute; bottom: 2px; left: 3px; font-family: 'Space Mono', monospace; font-size: 9px; color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.7); padding: 1px 4px; border-radius: 2px; }
+  .frames-empty { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); text-align: center; flex: 1; }
+  .gif-info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .info-card { background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+  .info-label { font-family: 'Space Mono', monospace; font-size: 10px; color: var(--text-muted); letter-spacing: 0.08em; text-transform: uppercase; }
+  .info-value { font-family: 'Space Mono', monospace; font-size: 16px; color: var(--accent-gold); font-weight: 700; }
+  .playback-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .frame-counter { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); }
+  .progress-track { flex: 1; height: 3px; background: var(--bg-elevated); border-radius: 2px; position: relative; cursor: pointer; }
+  .progress-fill { height: 100%; background: var(--accent-orange); border-radius: 2px; transition: width .1s linear; }
+
+  /* ── TAB 3 — ARRAY VIEWER ── */
+  .t3-body { display: grid; grid-template-columns: 1fr 360px; gap: 0; min-height: calc(100vh - 100px); }
+  .t3-main { padding: 20px 24px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 16px; }
+  .t3-sidebar { padding: 20px 18px; display: flex; flex-direction: column; gap: 16px; background: var(--bg-panel); overflow-y: auto; }
+  textarea#arrayInput { width: 100%; height: 320px; background: #050507; color: rgba(232,200,74,.85); font-family: 'Space Mono', monospace; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 11px; line-height: 1.6; padding: 12px; resize: vertical; outline: none; transition: border-color .2s; }
+  textarea#arrayInput:focus { border-color: var(--border-mid); }
+  textarea#arrayInput::placeholder { color: var(--text-muted); }
+  textarea#arrayInput.valid { border-color: rgba(74,232,136,.4); }
+  textarea#arrayInput.invalid { border-color: rgba(232,74,74,.4); }
+  .validate-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .validate-msg { font-family: 'Space Mono', monospace; font-size: 11px; padding: 5px 12px; border-radius: var(--radius-sm); }
+  .validate-msg.ok { color: var(--accent-green); background: var(--accent-green-dim); border: 1px solid rgba(74,232,136,.3); }
+  .validate-msg.err { color: var(--accent-red); background: var(--accent-red-dim); border: 1px solid rgba(232,74,74,.3); }
+  .render-stage { background: #080809; border: 1px solid var(--border); border-radius: var(--radius-lg); display: flex; justify-content: center; align-items: center; flex: 1; min-height: 250px; position: relative; overflow: auto; }
+  .render-stage::before { content: attr(data-placeholder); position: absolute; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); letter-spacing: 0.1em; pointer-events: none; text-align: center; padding: 20px; }
+  .format-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .fmt-chip { background: var(--bg-elevated); border: 1px solid var(--border-mid); border-radius: var(--radius-sm); padding: 10px 8px; font-size: 11px; font-family: 'Space Mono', monospace; color: var(--text-muted); cursor: pointer; text-align: center; letter-spacing: 0.05em; transition: all .15s; }
+  .fmt-chip:hover { border-color: var(--border-accent); color: var(--text-secondary); }
+  .fmt-chip.active { border-color: var(--accent-gold); background: var(--accent-gold-dim); color: var(--accent-gold); }
+  .fmt-chip .fmt-name { font-weight: 700; font-size: 12px; display: block; margin-bottom: 2px; }
+  .fmt-chip .fmt-sub { font-size: 10px; opacity: 0.7; }
+  .dim-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .dim-field { display: flex; align-items: center; gap: 6px; }
+  .dim-field label { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .dim-field input { width: 80px; }
+  .zoom-row { display: flex; align-items: center; gap: 10px; }
+  .zoom-btns { display: flex; gap: 4px; }
+  .zoom-btn { background: var(--bg-elevated); border: 1px solid var(--border-mid); color: var(--text-secondary); border-radius: var(--radius-sm); width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; font-family: 'Space Mono', monospace; transition: all .15s; }
+  .zoom-btn:hover { border-color: var(--border-accent); color: var(--text-primary); }
+  .zoom-val { font-family: 'Space Mono', monospace; font-size: 12px; color: var(--accent-cyan); min-width: 36px; text-align: center; }
+  .pixel-info { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--text-muted); padding: 8px 12px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: var(--radius-sm); min-height: 32px; }
+  .color-swatch { display: inline-block; width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); vertical-align: middle; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="header-top">
+    <div class="logo"><div class="logo-dot"></div>PIXEL TOOLKIT</div>
+    <span class="header-tag">Designed By Shuvabrata Dey</span>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('t1',this)"><span class="tab-icon">⬡</span> IMAGE EDITOR</button>
+    <button class="tab-btn" onclick="switchTab('t2',this)"><span class="tab-icon">◎</span> GIF EDITOR</button>
+    <button class="tab-btn" onclick="switchTab('t3',this)"><span class="tab-icon">▦</span> ARRAY VIEWER</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ TAB 1 ═══ -->
+<div id="t1" class="tab-content active">
+<div class="t1-body">
+  <div class="t1-editor">
+    <div>
+      <p class="panel-title">Input & Transform</p>
+      <div class="toolbar">
+        <div class="control-group">
+          <label>Source File</label>
+          <input type="file" id="t1_fileInput" accept="image/*" style="width:200px">
+        </div>
+        <div class="control-group">
+          <label>Mode</label>
+          <select id="t1_mode" style="width:130px">
+            <option value="resize">Full Resize</option>
+            <option value="crop">Crop Area</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Dimensions</label>
+          <div class="dim-inputs">
+            <input type="number" id="t1_targetW" style="width:80px" placeholder="W">
+            <div class="lock-btn locked" id="t1_lockBtn" title="Lock aspect ratio">⛓</div>
+            <input type="number" id="t1_targetH" style="width:80px" placeholder="H">
+          </div>
+        </div>
+        <button class="btn btn-action" id="t1_actionBtn">▶ APPLY</button>
+      </div>
+    </div>
+    <div class="action-strip">
+      <button class="btn btn-history" id="t1_undoBtn" disabled>↩ UNDO</button>
+      <button class="btn btn-history" id="t1_redoBtn" disabled>↪ REDO</button>
+      <button class="btn btn-green" id="t1_flipHBtn">↔ FLIP H</button>
+      <button class="btn btn-green" id="t1_flipVBtn">↕ FLIP V</button>
+      <button class="btn btn-purple" id="t1_rotateBtn">↻ ROTATE 90°</button>
+      <button class="btn btn-reset" id="t1_resetBtn">✕ RESET</button>
+      <span id="t1_imgDim" class="status-pill">no image</span>
+    </div>
+    <div class="canvas-stage" id="t1_canvasStage">
+      <canvas id="t1_sourceCanvas"></canvas>
+    </div>
+  </div>
+  <div class="t1-sidebar">
+    <div>
+      <p class="panel-title">Preview</p>
+      <div class="preview-frame">
+        <canvas id="t1_previewCanvas" style="width:100%;height:auto;display:block;image-rendering:pixelated"></canvas>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="sidebar-section">
+      <p class="panel-title">Display Target</p>
+      <div class="display-toggle-group">
+        <button class="display-btn active" id="t1_btnOled" data-mode="oled"><span class="display-icon">◐</span><span class="display-label">OLED</span><span class="display-sub">1-bit B&W</span></button>
+        <button class="display-btn" id="t1_btnTft" data-mode="tft"><span class="display-icon">▣</span><span class="display-label">TFT</span><span class="display-sub">RGB565 Color</span></button>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="sidebar-section" id="t1_thresholdSection">
+      <p class="panel-title">Threshold</p>
+      <div class="slider-row">
+        <span class="slider-label">Level</span>
+        <input type="range" id="t1_threshold" min="0" max="255" value="128">
+        <span class="slider-value" id="t1_thVal">128</span>
+      </div>
+    </div>
+    <div class="sidebar-section">
+      <p class="panel-title">Adjustments</p>
+      <div class="slider-row"><span class="slider-label">Bright</span><input type="range" id="t1_brightness" min="-100" max="100" value="0"><span class="slider-value" id="t1_brVal">0</span></div>
+      <div class="slider-row"><span class="slider-label">Contrast</span><input type="range" id="t1_contrast" min="-100" max="100" value="0"><span class="slider-value" id="t1_coVal">0</span></div>
+      <div class="slider-row"><span class="slider-label">Gamma</span><input type="range" id="t1_gamma" min="10" max="300" value="100" step="5"><span class="slider-value" id="t1_gaVal">1.0</span></div>
+    </div>
+    <div class="sidebar-section" id="t1_oledOptions">
+      <p class="panel-title">Dither & Effects</p>
+      <div class="filter-grid">
+        <div class="filter-chip active" id="t1_chipNone" data-dither="none">NONE</div>
+        <div class="filter-chip" id="t1_chipFloyd" data-dither="floyd">FLOYD-S</div>
+        <div class="filter-chip" id="t1_chipOrder" data-dither="ordered">ORDERED</div>
+        <div class="filter-chip" id="t1_chipAtk" data-dither="atkinson">ATKINSON</div>
+      </div>
+      <label class="toggle-row" style="margin-top:4px">
+        <input type="checkbox" id="t1_invert">
+        <div class="toggle-track"></div>
+        <span class="toggle-label">Invert Pixels</span>
+      </label>
+    </div>
+    <div class="divider"></div>
+    <div class="sidebar-section">
+      <button class="btn btn-convert" id="t1_convertBtn">⬡ CONVERT TO C ARRAY</button>
+      <div class="output-controls">
+        <p class="panel-title" style="margin:0">C Output</p>
+        <button class="copy-btn" id="t1_copyBtn">COPY</button>
+      </div>
+      <div class="output-wrap">
+        <textarea id="t1_output" class="code-output" style="height:170px" readonly placeholder="// C array output will appear here..."></textarea>
+        <span class="output-badge">C OUTPUT</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════ TAB 2 — GIF EDITOR ═══ -->
+<div id="t2" class="tab-content">
+<div class="t2-body">
+
+  <!-- LEFT: EDITOR AREA -->
+  <div class="t2-editor">
+
+    <!-- Toolbar row 1: file + dimensions + mode -->
+    <div>
+      <p class="panel-title">Input & Transform</p>
+      <div class="toolbar">
+        <div class="control-group">
+          <label>GIF File</label>
+          <input type="file" id="t2_fileInput" accept="image/gif" style="width:200px">
+        </div>
+        <div class="control-group">
+          <label>Mode</label>
+          <select id="t2_mode" style="width:130px">
+            <option value="resize">Full Resize</option>
+            <option value="crop">Crop Area</option>
+          </select>
+        </div>
+        <div class="control-group">
+          <label>Dimensions</label>
+          <div class="dim-inputs">
+            <input type="number" id="t2_targetW" style="width:80px" value="128" placeholder="W">
+            <div class="lock-btn locked" id="t2_lockBtn" title="Lock aspect ratio">⛓</div>
+            <input type="number" id="t2_targetH" style="width:80px" value="64" placeholder="H">
+          </div>
+        </div>
+        <div class="control-group">
+          <label>FPS</label>
+          <input type="number" id="t2_fps" style="width:65px" value="10" min="1" max="60">
+        </div>
+        <div class="control-group">
+          <label>Max Frames</label>
+          <input type="number" id="t2_maxFrames" style="width:75px" value="0" min="0" title="0 = all frames">
+        </div>
+        <!-- APPLY bakes the current resize/crop into the source frames -->
+        <button class="btn btn-action" id="t2_applyBtn" disabled>▶ APPLY</button>
+      </div>
+    </div>
+
+    <!-- Action strip: undo/redo + transforms + status -->
+    <div class="action-strip">
+      <button class="btn btn-history" id="t2_undoBtn" disabled>↩ UNDO</button>
+      <button class="btn btn-history" id="t2_redoBtn" disabled>↪ REDO</button>
+      <button class="btn btn-green" id="t2_flipHBtn" disabled>↔ FLIP H</button>
+      <button class="btn btn-green" id="t2_flipVBtn" disabled>↕ FLIP V</button>
+      <button class="btn btn-purple" id="t2_rotateBtn" disabled>↻ ROTATE 90°</button>
+      <button class="btn btn-reset" id="t2_resetBtn">✕ RESET</button>
+      <span id="t2_status" class="status-pill">no gif loaded</span>
+    </div>
+
+    <!-- Playback strip -->
+    <div class="action-strip">
+      <button class="btn btn-green" id="t2_playBtn" disabled>▶ PLAY</button>
+      <button class="btn btn-history" id="t2_prevFrameBtn" disabled>◀ PREV</button>
+      <button class="btn btn-history" id="t2_nextFrameBtn" disabled>NEXT ▶</button>
+      <span class="frame-counter" id="t2_frameCounter">0 / 0</span>
+      <div class="progress-track" style="flex:1;max-width:220px">
+        <div class="progress-fill" id="t2_progressFill" style="width:0%"></div>
+      </div>
+      <span id="t2_gifDim" class="status-pill">—</span>
+    </div>
+
+    <!-- Main source canvas stage (mirrors Image Editor) -->
+    <div class="gif-stage" id="t2_gifStage">
+      <canvas id="t2_sourceCanvas" style="display:none"></canvas>
+    </div>
+
+    <!-- Frame strip -->
+    <div class="frames-strip">
+      <p class="panel-title" style="margin:0">All Frames</p>
+      <div class="frames-scroll" id="t2_framesScroll">
+        <span class="frames-empty">Load a GIF to see all frames here</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RIGHT: SIDEBAR -->
+  <div class="t2-sidebar">
+
+    <!-- Info cards -->
+    <div class="sidebar-section">
+      <p class="panel-title">Info</p>
+      <div class="gif-info-grid">
+        <div class="info-card"><span class="info-label">Src Size</span><span class="info-value" id="t2_infoSize">—</span></div>
+        <div class="info-card"><span class="info-label">Frames</span><span class="info-value" id="t2_infoFrames">—</span></div>
+        <div class="info-card"><span class="info-label">Out Size</span><span class="info-value" id="t2_infoOut">—</span></div>
+        <div class="info-card"><span class="info-label">Out Frames</span><span class="info-value" id="t2_infoOutFrames">—</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Preview (processed current frame) -->
+    <div class="sidebar-section">
+      <p class="panel-title">Preview (current frame)</p>
+      <div class="preview-frame" style="min-height:90px">
+        <canvas id="t2_previewCanvas" style="width:100%;height:auto;display:block;image-rendering:pixelated"></canvas>
+      </div>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Display target -->
+    <div class="sidebar-section">
+      <p class="panel-title">Display Target</p>
+      <div class="display-toggle-group">
+        <button class="display-btn active" id="t2_btnOled"><span class="display-icon">◐</span><span class="display-label">OLED</span><span class="display-sub">1-bit B&W</span></button>
+        <button class="display-btn" id="t2_btnTft"><span class="display-icon">▣</span><span class="display-label">TFT</span><span class="display-sub">RGB565 Color</span></button>
+      </div>
+    </div>
+
+    <!-- Threshold (oled only) -->
+    <div class="sidebar-section" id="t2_threshSection">
+      <p class="panel-title">Threshold</p>
+      <div class="slider-row">
+        <span class="slider-label">Level</span>
+        <input type="range" id="t2_threshold" min="0" max="255" value="128">
+        <span class="slider-value" id="t2_thVal">128</span>
+      </div>
+    </div>
+
+    <!-- Adjustments -->
+    <div class="sidebar-section">
+      <p class="panel-title">Adjustments</p>
+      <div class="slider-row"><span class="slider-label">Bright</span><input type="range" id="t2_brightness" min="-100" max="100" value="0"><span class="slider-value" id="t2_brVal">0</span></div>
+      <div class="slider-row"><span class="slider-label">Contrast</span><input type="range" id="t2_contrast" min="-100" max="100" value="0"><span class="slider-value" id="t2_coVal">0</span></div>
+      <div class="slider-row"><span class="slider-label">Gamma</span><input type="range" id="t2_gamma" min="10" max="300" value="100" step="5"><span class="slider-value" id="t2_gaVal">1.0</span></div>
+    </div>
+
+    <!-- Dither & effects (oled only) -->
+    <div class="sidebar-section" id="t2_oledOpts">
+      <p class="panel-title">Dither & Effects</p>
+      <div class="filter-grid">
+        <div class="filter-chip active t2-dither" data-dither="none">NONE</div>
+        <div class="filter-chip t2-dither" data-dither="floyd">FLOYD-S</div>
+        <div class="filter-chip t2-dither" data-dither="ordered">ORDERED</div>
+        <div class="filter-chip t2-dither" data-dither="atkinson">ATKINSON</div>
+      </div>
+      <label class="toggle-row" style="margin-top:4px">
+        <input type="checkbox" id="t2_invert">
+        <div class="toggle-track"></div>
+        <span class="toggle-label">Invert Pixels</span>
+      </label>
+    </div>
+    <div class="divider"></div>
+
+    <!-- Convert & output -->
+    <div class="sidebar-section">
+      <button class="btn btn-convert" id="t2_convertBtn" disabled>⬡ CONVERT ALL FRAMES</button>
+      <div class="output-controls">
+        <p class="panel-title" style="margin:0">C Output</p>
+        <button class="copy-btn" id="t2_copyBtn">COPY</button>
+      </div>
+      <div class="output-wrap">
+        <textarea id="t2_output" class="code-output" style="height:180px" readonly placeholder="// GIF frame arrays will appear here..."></textarea>
+        <span class="output-badge">C OUTPUT</span>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════ TAB 3 ═══ -->
+<div id="t3" class="tab-content">
+<div class="t3-body">
+  <div class="t3-main">
+    <div>
+      <p class="panel-title">Array Input</p>
+      <textarea id="arrayInput" placeholder="// Paste your C array here...
+// Supported formats:
+//   1-bit OLED packed: const unsigned char img[] = {0xFF, 0x00, ...};
+//   RGB565 TFT:        const unsigned short img[] = {0xF800, 0x07E0, ...};
+//   RGB888:            {0xFF0000, 0x00FF00, ...}
+//   Raw grayscale:     {255, 128, 0, ...}"></textarea>
+      <div class="validate-bar" style="margin-top:8px">
+        <button class="btn btn-action" id="t3_renderBtn">▶ RENDER</button>
+        <button class="btn btn-reset" id="t3_clearBtn">✕ CLEAR</button>
+        <span id="t3_validateMsg" style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted)">paste array and click render</span>
+      </div>
+    </div>
+    <div class="render-stage" id="t3_renderStage" data-placeholder="PASTE ARRAY AND CLICK RENDER">
+      <canvas id="t3_renderCanvas" style="display:none;image-rendering:pixelated"></canvas>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div class="zoom-row">
+        <span class="slider-label" style="min-width:auto">Zoom</span>
+        <div class="zoom-btns">
+          <div class="zoom-btn" id="t3_zoomOut">−</div>
+          <span class="zoom-val" id="t3_zoomVal">4×</span>
+          <div class="zoom-btn" id="t3_zoomIn">+</div>
+        </div>
+      </div>
+      <div class="pixel-info" id="t3_pixelInfo">hover over image to inspect pixel</div>
+    </div>
+  </div>
+  <div class="t3-sidebar">
+    <div class="sidebar-section">
+      <p class="panel-title">Image Format</p>
+      <div class="format-grid">
+        <div class="fmt-chip active t3-fmt" data-fmt="oled1bit"><span class="fmt-name">1-BIT</span><span class="fmt-sub">OLED packed</span></div>
+        <div class="fmt-chip t3-fmt" data-fmt="rgb565"><span class="fmt-name">RGB565</span><span class="fmt-sub">16-bit TFT</span></div>
+        <div class="fmt-chip t3-fmt" data-fmt="rgb888"><span class="fmt-name">RGB888</span><span class="fmt-sub">24-bit color</span></div>
+        <div class="fmt-chip t3-fmt" data-fmt="gray8"><span class="fmt-name">GRAY8</span><span class="fmt-sub">8-bit grayscale</span></div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="sidebar-section">
+      <p class="panel-title">Dimensions</p>
+      <div class="dim-row">
+        <div class="dim-field"><label>W</label><input type="number" id="t3_width" value="128" min="1" style="width:80px"></div>
+        <span style="font-family:'Space Mono',monospace;font-size:14px;color:var(--text-muted)">×</span>
+        <div class="dim-field"><label>H</label><input type="number" id="t3_height" value="64" min="1" style="width:80px"></div>
+      </div>
+      <p style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);margin-top:4px">or extract from array name (img_128x64)</p>
+    </div>
+    <div class="divider"></div>
+    <div class="sidebar-section" id="t3_oledOpts">
+      <p class="panel-title">1-Bit Options</p>
+      <div class="slider-row">
+        <span class="slider-label">BG Color</span>
+        <input type="color" id="t3_bgColor" value="#000000" style="width:40px;height:28px;border:1px solid var(--border-mid);border-radius:4px;background:transparent;cursor:pointer;padding:2px">
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">FG Color</span>
+        <input type="color" id="t3_fgColor" value="#ffffff" style="width:40px;height:28px;border:1px solid var(--border-mid);border-radius:4px;background:transparent;cursor:pointer;padding:2px">
+      </div>
+      <label class="toggle-row">
+        <input type="checkbox" id="t3_invertBits">
+        <div class="toggle-track"></div>
+        <span class="toggle-label">Invert Bits</span>
+      </label>
+    </div>
+    <div class="divider"></div>
+    <div class="sidebar-section">
+      <p class="panel-title">Image Info</p>
+      <div class="gif-info-grid">
+        <div class="info-card"><span class="info-label">Width</span><span class="info-value" id="t3_infoW">—</span></div>
+        <div class="info-card"><span class="info-label">Height</span><span class="info-value" id="t3_infoH">—</span></div>
+        <div class="info-card"><span class="info-label">Bytes</span><span class="info-value" id="t3_infoBytes">—</span></div>
+        <div class="info-card"><span class="info-label">Format</span><span class="info-value" id="t3_infoFmt" style="font-size:12px">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function switchTab(id, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ╔═══════════════════════════════════════════════════════╗
+   ║  TAB 1 — IMAGE EDITOR                                ║
+   ╚═══════════════════════════════════════════════════════╝ */
+(function(){
+const sourceCanvas = document.getElementById('t1_sourceCanvas');
+const sCtx = sourceCanvas.getContext('2d');
+const previewCanvas = document.getElementById('t1_previewCanvas');
+const pCtx = previewCanvas.getContext('2d');
+const canvasStage = document.getElementById('t1_canvasStage');
+let originalImg=null, currentImg=null, historyStack=[], redoStack=[];
+let isDragging=false, crop={x:0,y:0,w:128,h:64}, startMouse={x:0,y:0};
+let displayMode='oled', aspectRatio=null, isLocked=true, activeDither='none';
+let isUpdatingW=false, isUpdatingH=false;
+const lockBtn=document.getElementById('t1_lockBtn');
+lockBtn.onclick=()=>{ isLocked=!isLocked; lockBtn.classList.toggle('locked',isLocked); lockBtn.textContent=isLocked?'⛓':'✂'; if(isLocked&&currentImg){const w=parseInt(document.getElementById('t1_targetW').value)||currentImg.width;const h=parseInt(document.getElementById('t1_targetH').value)||currentImg.height;aspectRatio=w/h;} };
+document.getElementById('t1_btnOled').onclick=()=>setDisplayMode('oled');
+document.getElementById('t1_btnTft').onclick=()=>setDisplayMode('tft');
+function setDisplayMode(mode){displayMode=mode;document.getElementById('t1_btnOled').classList.toggle('active',mode==='oled');document.getElementById('t1_btnTft').classList.toggle('active',mode==='tft');document.getElementById('t1_thresholdSection').style.display=mode==='oled'?'':'none';document.getElementById('t1_oledOptions').style.display=mode==='oled'?'':'none';document.getElementById('t1_convertBtn').textContent=mode==='tft'?'▣ CONVERT — RGB565':'⬡ CONVERT — 1-bit';}
+document.querySelectorAll('#t1 .filter-chip').forEach(chip=>{chip.onclick=()=>{document.querySelectorAll('#t1 .filter-chip').forEach(c=>c.classList.remove('active'));chip.classList.add('active');activeDither=chip.dataset.dither;};});
+document.getElementById('t1_fileInput').onchange=e=>{const reader=new FileReader();reader.onload=evt=>{const tempImg=new Image();tempImg.onload=()=>{originalImg=tempImg;currentImg=tempImg;historyStack=[tempImg];redoStack=[];canvasStage.classList.add('has-image');initDimensions(tempImg.width,tempImg.height);updateWorkspace();};tempImg.src=evt.target.result;};reader.readAsDataURL(e.target.files[0]);};
+function initDimensions(w,h){document.getElementById('t1_targetW').value=w;document.getElementById('t1_targetH').value=h;aspectRatio=w/h;resetCropBox(w,h);}
+function resetCropBox(w,h){crop.w=Math.min(w,parseInt(document.getElementById('t1_targetW').value)||128);crop.h=Math.min(h,parseInt(document.getElementById('t1_targetH').value)||64);crop.x=Math.max(0,Math.min(crop.x,w-crop.w));crop.y=Math.max(0,Math.min(crop.y,h-crop.h));}
+function updateWorkspace(){if(!currentImg)return;const w=currentImg.width,h=currentImg.height;sourceCanvas.width=w;sourceCanvas.height=h;document.getElementById('t1_imgDim').innerText=`${w} × ${h} px`;sCtx.drawImage(currentImg,0,0);if(document.getElementById('t1_mode').value==='crop'){sCtx.fillStyle="rgba(0,0,0,0.65)";sCtx.fillRect(0,0,w,crop.y);sCtx.fillRect(0,crop.y+crop.h,w,h-(crop.y+crop.h));sCtx.fillRect(0,crop.y,crop.x,crop.h);sCtx.fillRect(crop.x+crop.w,crop.y,w-(crop.x+crop.w),crop.h);sCtx.strokeStyle="rgba(232,200,74,0.9)";sCtx.lineWidth=1.5;sCtx.strokeRect(crop.x,crop.y,crop.w,crop.h);const cs=9;sCtx.fillStyle="#e8c84a";[[crop.x,crop.y],[crop.x+crop.w-cs,crop.y],[crop.x,crop.y+crop.h-cs],[crop.x+crop.w-cs,crop.y+crop.h-cs]].forEach(([cx,cy])=>sCtx.fillRect(cx,cy,cs,cs));sCtx.strokeStyle="rgba(232,200,74,0.18)";sCtx.lineWidth=0.75;for(let i=1;i<3;i++){sCtx.beginPath();sCtx.moveTo(crop.x+(crop.w/3)*i,crop.y);sCtx.lineTo(crop.x+(crop.w/3)*i,crop.y+crop.h);sCtx.stroke();sCtx.beginPath();sCtx.moveTo(crop.x,crop.y+(crop.h/3)*i);sCtx.lineTo(crop.x+crop.w,crop.y+(crop.h/3)*i);sCtx.stroke();}}updateHistoryButtons();}
+document.getElementById('t1_targetW').oninput=()=>{if(isUpdatingH)return;const w=parseInt(document.getElementById('t1_targetW').value)||1;let h=parseInt(document.getElementById('t1_targetH').value)||1;if(isLocked&&aspectRatio&&currentImg){isUpdatingW=true;h=Math.round(w/aspectRatio);document.getElementById('t1_targetH').value=h;isUpdatingW=false;}if(!currentImg)return;crop.w=Math.min(w,currentImg.width);crop.h=Math.min(h,currentImg.height);crop.x=Math.max(0,Math.min(crop.x,currentImg.width-crop.w));crop.y=Math.max(0,Math.min(crop.y,currentImg.height-crop.h));updateWorkspace();};
+document.getElementById('t1_targetH').oninput=()=>{if(isUpdatingW)return;const h=parseInt(document.getElementById('t1_targetH').value)||1;let w=parseInt(document.getElementById('t1_targetW').value)||1;if(isLocked&&aspectRatio&&currentImg){isUpdatingH=true;w=Math.round(h*aspectRatio);document.getElementById('t1_targetW').value=w;isUpdatingH=false;}if(!currentImg)return;crop.w=Math.min(w,currentImg.width);crop.h=Math.min(h,currentImg.height);crop.x=Math.max(0,Math.min(crop.x,currentImg.width-crop.w));crop.y=Math.max(0,Math.min(crop.y,currentImg.height-crop.h));updateWorkspace();};
+document.getElementById('t1_actionBtn').onclick=()=>{if(!currentImg)return;const mode=document.getElementById('t1_mode').value;const tw=parseInt(document.getElementById('t1_targetW').value);const th=parseInt(document.getElementById('t1_targetH').value);const ac=document.createElement('canvas');ac.width=tw;ac.height=th;const aCtx=ac.getContext('2d');if(mode==='crop')aCtx.drawImage(currentImg,crop.x,crop.y,crop.w,crop.h,0,0,tw,th);else aCtx.drawImage(currentImg,0,0,currentImg.width,currentImg.height,0,0,tw,th);const newImg=new Image();newImg.onload=()=>{historyStack.push(newImg);redoStack=[];currentImg=newImg;initDimensions(newImg.width,newImg.height);updateWorkspace();};newImg.src=ac.toDataURL();};
+document.getElementById('t1_flipHBtn').onclick=()=>{if(!currentImg)return;const ac=document.createElement('canvas');ac.width=currentImg.width;ac.height=currentImg.height;const aCtx=ac.getContext('2d');aCtx.translate(ac.width,0);aCtx.scale(-1,1);aCtx.drawImage(currentImg,0,0);pushImage(ac);};
+document.getElementById('t1_flipVBtn').onclick=()=>{if(!currentImg)return;const ac=document.createElement('canvas');ac.width=currentImg.width;ac.height=currentImg.height;const aCtx=ac.getContext('2d');aCtx.translate(0,ac.height);aCtx.scale(1,-1);aCtx.drawImage(currentImg,0,0);pushImage(ac);};
+document.getElementById('t1_rotateBtn').onclick=()=>{if(!currentImg)return;const ac=document.createElement('canvas');ac.width=currentImg.height;ac.height=currentImg.width;const aCtx=ac.getContext('2d');aCtx.translate(ac.width,0);aCtx.rotate(Math.PI/2);aCtx.drawImage(currentImg,0,0);pushImage(ac);};
+function pushImage(canvas){const newImg=new Image();newImg.onload=()=>{historyStack.push(newImg);redoStack=[];currentImg=newImg;initDimensions(newImg.width,newImg.height);updateWorkspace();};newImg.src=canvas.toDataURL();}
+document.getElementById('t1_undoBtn').onclick=()=>{if(historyStack.length>1){redoStack.push(historyStack.pop());currentImg=historyStack[historyStack.length-1];initDimensions(currentImg.width,currentImg.height);updateWorkspace();}};
+document.getElementById('t1_redoBtn').onclick=()=>{if(redoStack.length>0){const img=redoStack.pop();historyStack.push(img);currentImg=img;initDimensions(currentImg.width,currentImg.height);updateWorkspace();}};
+document.getElementById('t1_resetBtn').onclick=()=>{if(!originalImg)return;currentImg=originalImg;historyStack=[originalImg];redoStack=[];initDimensions(originalImg.width,originalImg.height);updateWorkspace();};
+function updateHistoryButtons(){document.getElementById('t1_undoBtn').disabled=historyStack.length<=1;document.getElementById('t1_redoBtn').disabled=redoStack.length===0;}
+document.getElementById('t1_threshold').oninput=e=>document.getElementById('t1_thVal').innerText=e.target.value;
+document.getElementById('t1_brightness').oninput=e=>document.getElementById('t1_brVal').innerText=e.target.value;
+document.getElementById('t1_contrast').oninput=e=>document.getElementById('t1_coVal').innerText=e.target.value;
+document.getElementById('t1_gamma').oninput=e=>document.getElementById('t1_gaVal').innerText=(e.target.value/100).toFixed(1);
+document.getElementById('t1_convertBtn').onclick=()=>{if(!currentImg)return;const tw=currentImg.width,th=currentImg.height;previewCanvas.width=tw;previewCanvas.height=th;pCtx.drawImage(currentImg,0,0);let imgData=pCtx.getImageData(0,0,tw,th);let d=imgData.data;const bright=parseInt(document.getElementById('t1_brightness').value);const cont=parseInt(document.getElementById('t1_contrast').value);const gammaVal=parseInt(document.getElementById('t1_gamma').value)/100;const factor=(259*(cont+255))/(255*(259-cont));const gammaLUT=new Uint8Array(256);for(let i=0;i<256;i++)gammaLUT[i]=Math.min(255,Math.round(Math.pow(i/255,1/gammaVal)*255));for(let i=0;i<d.length;i+=4){let r=d[i],g=d[i+1],b=d[i+2];r=gammaLUT[r];g=gammaLUT[g];b=gammaLUT[b];r=Math.min(255,Math.max(0,r+bright));g=Math.min(255,Math.max(0,g+bright));b=Math.min(255,Math.max(0,b+bright));r=Math.min(255,Math.max(0,factor*(r-128)+128));g=Math.min(255,Math.max(0,factor*(g-128)+128));b=Math.min(255,Math.max(0,factor*(b-128)+128));d[i]=r;d[i+1]=g;d[i+2]=b;}if(displayMode==='tft'){let output=`// TFT Color — RGB565\n// ${tw}x${th} (${tw*th*2} bytes)\nconst unsigned short img_${tw}x${th}[] = {\n`;for(let y=0;y<th;y++){let row='  ';for(let x=0;x<tw;x++){const i=(y*tw+x)*4;const rgb565=((d[i]>>3)<<11)|((d[i+1]>>2)<<5)|(d[i+2]>>3);row+='0x'+rgb565.toString(16).toUpperCase().padStart(4,'0')+', ';}output+=row+'\n';}document.getElementById('t1_output').value=output+'};';pCtx.putImageData(imgData,0,0);}else{const threshold=parseInt(document.getElementById('t1_threshold').value);const invert=document.getElementById('t1_invert').checked;const grayArr=new Float32Array(tw*th);for(let i=0;i<tw*th;i++)grayArr[i]=(d[i*4]+d[i*4+1]+d[i*4+2])/3;const bwArr=new Uint8Array(tw*th);if(activeDither==='floyd'){const err=new Float32Array(tw*th);for(let y=0;y<th;y++)for(let x=0;x<tw;x++){const idx=y*tw+x;let gray=grayArr[idx]+err[idx];const px=gray<threshold?0:255;bwArr[idx]=px;const e=gray-px;if(x+1<tw)err[idx+1]+=e*7/16;if(y+1<th){if(x>0)err[idx+tw-1]+=e*3/16;err[idx+tw]+=e*5/16;if(x+1<tw)err[idx+tw+1]+=e*1/16;}}}else if(activeDither==='ordered'){const M=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];for(let y=0;y<th;y++)for(let x=0;x<tw;x++){const t=(M[(y%4)*4+(x%4)]/16)*255;bwArr[y*tw+x]=grayArr[y*tw+x]>t?255:0;}}else if(activeDither==='atkinson'){const err2=new Float32Array(tw*th);for(let y=0;y<th;y++)for(let x=0;x<tw;x++){const idx=y*tw+x;let gray=grayArr[idx]+err2[idx];const px=gray<threshold?0:255;bwArr[idx]=px;const e=(gray-px)/8;if(x+1<tw)err2[idx+1]+=e;if(x+2<tw)err2[idx+2]+=e;if(y+1<th){if(x>0)err2[idx+tw-1]+=e;err2[idx+tw]+=e;if(x+1<tw)err2[idx+tw+1]+=e;}if(y+2<th)err2[idx+tw*2]+=e;}}else{for(let i=0;i<tw*th;i++)bwArr[i]=grayArr[i]<threshold?0:255;}let output=`// OLED 1-bit packed (${activeDither==='none'?'threshold':activeDither+' dither'})\n// ${tw}x${th}\nconst unsigned char img_${tw}x${th}[] = {\n`;for(let y=0;y<th;y++){let byte=0,bits=0,row='  ';for(let x=0;x<tw;x++){let pixel=bwArr[y*tw+x]<128?1:0;if(invert)pixel=pixel?0:1;const i=(y*tw+x)*4;d[i]=d[i+1]=d[i+2]=pixel?0:255;byte=(byte<<1)|pixel;bits++;if(bits===8){row+='0x'+byte.toString(16).padStart(2,'0')+', ';byte=0;bits=0;}}if(bits>0){byte<<=(8-bits);row+='0x'+byte.toString(16).padStart(2,'0')+', ';}output+=row+'\n';}pCtx.putImageData(imgData,0,0);document.getElementById('t1_output').value=output+'}'+';\n';}};
+document.getElementById('t1_copyBtn').onclick=()=>{const txt=document.getElementById('t1_output').value;if(!txt)return;navigator.clipboard.writeText(txt).then(()=>{const btn=document.getElementById('t1_copyBtn');btn.textContent='COPIED!';btn.classList.add('copied');setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);});};
+sourceCanvas.onmousedown=e=>{if(document.getElementById('t1_mode').value!=='crop')return;const r=sourceCanvas.getBoundingClientRect();const scaleX=currentImg.width/r.width,scaleY=currentImg.height/r.height;const mx=(e.clientX-r.left)*scaleX,my=(e.clientY-r.top)*scaleY;if(mx>=crop.x&&mx<=crop.x+crop.w&&my>=crop.y&&my<=crop.y+crop.h){isDragging=true;startMouse={x:mx-crop.x,y:my-crop.y};}};
+window.addEventListener('mousemove',e=>{if(!isDragging||!currentImg)return;const r=sourceCanvas.getBoundingClientRect();const scaleX=currentImg.width/r.width,scaleY=currentImg.height/r.height;const mx=(e.clientX-r.left)*scaleX,my=(e.clientY-r.top)*scaleY;crop.x=Math.max(0,Math.min(mx-startMouse.x,currentImg.width-crop.w));crop.y=Math.max(0,Math.min(my-startMouse.y,currentImg.height-crop.h));updateWorkspace();});
+window.addEventListener('mouseup',()=>isDragging=false);
+document.getElementById('t1_mode').onchange=updateWorkspace;
+})();
+
+/* ╔═══════════════════════════════════════════════════════╗
+   ║  TAB 2 — GIF EDITOR (Full Image-Editor parity)       ║
+   ╚═══════════════════════════════════════════════════════╝ */
+(function(){
+
+// ── State ──
+// historyStack stores snapshots: each snapshot is {frames: canvas[], delays: number[], w, h}
+let originalSnapshot = null;
+let historyStack = [], redoStack = [];
+// currentFrames is the "live" working set of source canvases
+let currentFrames = [], currentDelays = [];
+
+let processedFrames = [];   // result of apply/crop/resize on currentFrames
+let currentFrame = 0, playTimer = null, isPlaying = false;
+let t2DisplayMode = 'oled', t2Dither = 'none';
+let t2AspectRatio = null, t2IsLocked = true;
+let t2UpdW = false, t2UpdH = false;
+let t2Crop = {x:0, y:0, w:128, h:64};
+let t2CropDragging = false, t2CropStart = {x:0, y:0};
+let gifObjectURL = null;
+
+const gifStage   = document.getElementById('t2_gifStage');
+const srcCanvas  = document.getElementById('t2_sourceCanvas');
+const prevCanvas = document.getElementById('t2_previewCanvas');
+
+// ── Helpers ──
+function clampGifDelay(ms){ return Math.max(20, Number.isFinite(ms)&&ms>0 ? ms : 100); }
+
+function copyCanvas(src){
+  const c=document.createElement('canvas'); c.width=src.width; c.height=src.height;
+  c.getContext('2d').drawImage(src,0,0); return c;
+}
+
+function snapshotFrames(frames){
+  return frames.map(copyCanvas);
+}
+
+// ── Lock ──
+const t2LockBtn = document.getElementById('t2_lockBtn');
+t2LockBtn.onclick = () => {
+  t2IsLocked = !t2IsLocked;
+  t2LockBtn.classList.toggle('locked', t2IsLocked);
+  t2LockBtn.textContent = t2IsLocked ? '⛓' : '✂';
+  if(t2IsLocked && currentFrames.length){
+    const w=parseInt(document.getElementById('t2_targetW').value)||currentFrames[0].width;
+    const h=parseInt(document.getElementById('t2_targetH').value)||currentFrames[0].height;
+    t2AspectRatio=w/h;
+  }
+};
+
+// ── Display mode ──
+document.getElementById('t2_btnOled').onclick = () => setT2Display('oled');
+document.getElementById('t2_btnTft').onclick  = () => setT2Display('tft');
+function setT2Display(mode){
+  t2DisplayMode=mode;
+  document.getElementById('t2_btnOled').classList.toggle('active',mode==='oled');
+  document.getElementById('t2_btnTft').classList.toggle('active',mode==='tft');
+  document.getElementById('t2_threshSection').style.display=mode==='oled'?'':'none';
+  document.getElementById('t2_oledOpts').style.display=mode==='oled'?'':'none';
+  document.getElementById('t2_convertBtn').textContent=mode==='tft'?'▣ CONVERT ALL — RGB565':'⬡ CONVERT ALL FRAMES';
+  if(processedFrames.length) t2RefreshCurrentFrame();
+}
+
+// ── Dither chips ──
+document.querySelectorAll('.t2-dither').forEach(chip=>{
+  chip.onclick=()=>{
+    document.querySelectorAll('.t2-dither').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active'); t2Dither=chip.dataset.dither;
+    if(processedFrames.length) t2RefreshCurrentFrame();
+  };
+});
+
+// ── Sliders ──
+document.getElementById('t2_threshold').oninput=e=>{document.getElementById('t2_thVal').innerText=e.target.value;if(processedFrames.length)t2RefreshCurrentFrame();};
+document.getElementById('t2_brightness').oninput=e=>{document.getElementById('t2_brVal').innerText=e.target.value;if(processedFrames.length)t2RefreshCurrentFrame();};
+document.getElementById('t2_contrast').oninput=e=>{document.getElementById('t2_coVal').innerText=e.target.value;if(processedFrames.length)t2RefreshCurrentFrame();};
+document.getElementById('t2_gamma').oninput=e=>{document.getElementById('t2_gaVal').innerText=(e.target.value/100).toFixed(1);if(processedFrames.length)t2RefreshCurrentFrame();};
+document.getElementById('t2_invert').onchange=()=>{if(processedFrames.length)t2RefreshCurrentFrame();};
+
+// ── W/H inputs — LIVE: update crop box AND source canvas overlay ──
+document.getElementById('t2_targetW').oninput=()=>{
+  if(t2UpdH) return;
+  const w=parseInt(document.getElementById('t2_targetW').value)||1;
+  if(t2IsLocked&&t2AspectRatio){ t2UpdW=true; document.getElementById('t2_targetH').value=Math.round(w/t2AspectRatio); t2UpdW=false; }
+  if(!currentFrames.length) return;
+  const h=parseInt(document.getElementById('t2_targetH').value)||1;
+  const fw=currentFrames[0].width, fh=currentFrames[0].height;
+  t2Crop.w=Math.min(w,fw); t2Crop.h=Math.min(h,fh);
+  t2Crop.x=Math.max(0,Math.min(t2Crop.x,fw-t2Crop.w));
+  t2Crop.y=Math.max(0,Math.min(t2Crop.y,fh-t2Crop.h));
+  t2UpdateSourceCanvas(); t2LiveProcess();
+};
+document.getElementById('t2_targetH').oninput=()=>{
+  if(t2UpdW) return;
+  const h=parseInt(document.getElementById('t2_targetH').value)||1;
+  if(t2IsLocked&&t2AspectRatio){ t2UpdH=true; document.getElementById('t2_targetW').value=Math.round(h*t2AspectRatio); t2UpdH=false; }
+  if(!currentFrames.length) return;
+  const w=parseInt(document.getElementById('t2_targetW').value)||1;
+  const fw=currentFrames[0].width, fh=currentFrames[0].height;
+  t2Crop.w=Math.min(w,fw); t2Crop.h=Math.min(h,fh);
+  t2Crop.x=Math.max(0,Math.min(t2Crop.x,fw-t2Crop.w));
+  t2Crop.y=Math.max(0,Math.min(t2Crop.y,fh-t2Crop.h));
+  t2UpdateSourceCanvas(); t2LiveProcess();
+};
+document.getElementById('t2_mode').onchange=()=>{ t2UpdateSourceCanvas(); t2LiveProcess(); };
+document.getElementById('t2_fps').oninput=()=>{ if(currentFrames.length) t2LiveProcess(); };
+document.getElementById('t2_maxFrames').oninput=()=>{ if(currentFrames.length) t2LiveProcess(); };
+
+// ── Update SOURCE canvas (draws frame[0] + crop overlay, like Image Editor) ──
+function t2UpdateSourceCanvas(){
+  if(!currentFrames.length) return;
+  const fw=currentFrames[0].width, fh=currentFrames[0].height;
+  srcCanvas.width=fw; srcCanvas.height=fh;
+  srcCanvas.style.display='block';
+  const ctx=srcCanvas.getContext('2d');
+  ctx.clearRect(0,0,fw,fh);
+  // Show current playing frame or frame 0
+  const showF=currentFrames[Math.min(currentFrame,currentFrames.length-1)];
+  ctx.drawImage(showF,0,0,fw,fh);
+  document.getElementById('t2_gifDim').innerText=`${fw} × ${fh} px`;
+  document.getElementById('t2_infoSize').innerText=`${fw}×${fh}`;
+
+  const mode=document.getElementById('t2_mode').value;
+  if(mode==='crop'){
+    const{x,y,w,h}=t2Crop;
+    ctx.fillStyle='rgba(0,0,0,0.65)';
+    ctx.fillRect(0,0,fw,y); ctx.fillRect(0,y+h,fw,fh-(y+h));
+    ctx.fillRect(0,y,x,h); ctx.fillRect(x+w,y,fw-(x+w),h);
+    ctx.strokeStyle='rgba(232,200,74,0.9)'; ctx.lineWidth=1.5; ctx.strokeRect(x,y,w,h);
+    const cs=9; ctx.fillStyle='#e8c84a';
+    [[x,y],[x+w-cs,y],[x,y+h-cs],[x+w-cs,y+h-cs]].forEach(([cx,cy])=>ctx.fillRect(cx,cy,cs,cs));
+    ctx.strokeStyle='rgba(232,200,74,0.18)'; ctx.lineWidth=0.75;
+    for(let i=1;i<3;i++){
+      ctx.beginPath();ctx.moveTo(x+(w/3)*i,y);ctx.lineTo(x+(w/3)*i,y+h);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x,y+(h/3)*i);ctx.lineTo(x+w,y+(h/3)*i);ctx.stroke();
+    }
+  }
+  t2UpdateHistoryButtons();
+}
+
+// ── Crop drag on SOURCE canvas ──
+srcCanvas.onmousedown=e=>{
+  if(document.getElementById('t2_mode').value!=='crop'||!currentFrames.length) return;
+  const r=srcCanvas.getBoundingClientRect();
+  const sx=currentFrames[0].width/r.width, sy=currentFrames[0].height/r.height;
+  const mx=(e.clientX-r.left)*sx, my=(e.clientY-r.top)*sy;
+  if(mx>=t2Crop.x&&mx<=t2Crop.x+t2Crop.w&&my>=t2Crop.y&&my<=t2Crop.y+t2Crop.h){
+    t2CropDragging=true; t2CropStart={x:mx-t2Crop.x,y:my-t2Crop.y};
+  }
+};
+window.addEventListener('mousemove',e=>{
+  if(!t2CropDragging||!currentFrames.length) return;
+  const r=srcCanvas.getBoundingClientRect();
+  const sx=currentFrames[0].width/r.width, sy=currentFrames[0].height/r.height;
+  const mx=(e.clientX-r.left)*sx, my=(e.clientY-r.top)*sy;
+  t2Crop.x=Math.max(0,Math.min(mx-t2CropStart.x, currentFrames[0].width-t2Crop.w));
+  t2Crop.y=Math.max(0,Math.min(my-t2CropStart.y, currentFrames[0].height-t2Crop.h));
+  t2UpdateSourceCanvas(); t2LiveProcess();
+});
+window.addEventListener('mouseup',()=>t2CropDragging=false);
+
+// ── History ──
+function t2PushHistory(){
+  historyStack.push({frames:snapshotFrames(currentFrames), delays:[...currentDelays]});
+  redoStack=[];
+  t2UpdateHistoryButtons();
+}
+function t2UpdateHistoryButtons(){
+  document.getElementById('t2_undoBtn').disabled=historyStack.length<=1;
+  document.getElementById('t2_redoBtn').disabled=redoStack.length===0;
+}
+document.getElementById('t2_undoBtn').onclick=()=>{
+  if(historyStack.length<=1) return;
+  redoStack.push(historyStack.pop());
+  const snap=historyStack[historyStack.length-1];
+  currentFrames=snapshotFrames(snap.frames); currentDelays=[...snap.delays];
+  t2AfterFrameChange(); t2UpdateHistoryButtons();
+};
+document.getElementById('t2_redoBtn').onclick=()=>{
+  if(!redoStack.length) return;
+  const snap=redoStack.pop();
+  historyStack.push({frames:snapshotFrames(snap.frames),delays:[...snap.delays]});
+  currentFrames=snapshotFrames(snap.frames); currentDelays=[...snap.delays];
+  t2AfterFrameChange(); t2UpdateHistoryButtons();
+};
+
+function t2AfterFrameChange(){
+  const fw=currentFrames[0].width, fh=currentFrames[0].height;
+  document.getElementById('t2_targetW').value=fw;
+  document.getElementById('t2_targetH').value=fh;
+  t2AspectRatio=fw/fh;
+  t2Crop.w=Math.min(t2Crop.w,fw); t2Crop.h=Math.min(t2Crop.h,fh);
+  t2Crop.x=Math.max(0,Math.min(t2Crop.x,fw-t2Crop.w));
+  t2Crop.y=Math.max(0,Math.min(t2Crop.y,fh-t2Crop.h));
+  document.getElementById('t2_infoFrames').innerText=currentFrames.length;
+  t2UpdateSourceCanvas(); t2LiveProcess();
+}
+
+// ── File load ──
+document.getElementById('t2_fileInput').onchange=e=>{
+  const file=e.target.files[0]; if(!file) return;
+  clearInterval(playTimer); isPlaying=false;
+  document.getElementById('t2_playBtn').textContent='▶ PLAY';
+  document.getElementById('t2_status').innerText='loading...';
+  if(gifObjectURL) URL.revokeObjectURL(gifObjectURL);
+  gifObjectURL=URL.createObjectURL(file);
+  document.getElementById('t2_status').innerText='extracting frames...';
+  extractGifFrames(gifObjectURL, file);
+};
+
+async function extractGifFrames(url, file){
+  try{
+    const buffer=await file.arrayBuffer();
+    const bytes=new Uint8Array(buffer);
+    const meta=parseGifTimingMetadata(bytes);
+    let frames=null;
+    if(typeof ImageDecoder!=='undefined'){
+      try{ frames=await extractGifFramesWithImageDecoder(buffer); }catch(e){ console.warn('ImageDecoder:',e); }
+    }
+    if(!frames||!frames.length) frames=parseGIF(bytes);
+    const firstImg=new Image();
+    await new Promise(res=>{firstImg.onload=res; firstImg.src=gifObjectURL;});
+    if(!frames||!frames.length){
+      const c=document.createElement('canvas'); c.width=firstImg.width; c.height=firstImg.height;
+      c.getContext('2d').drawImage(firstImg,0,0); frames=[c];
+    }
+    const delays=frames.map((_,i)=>clampGifDelay(meta.delays[i]));
+    currentFrames=frames; currentDelays=delays;
+    originalSnapshot={frames:snapshotFrames(frames),delays:[...delays]};
+    historyStack=[{frames:snapshotFrames(frames),delays:[...delays]}];
+    redoStack=[];
+    const fw=frames[0].width, fh=frames[0].height;
+    t2AspectRatio=fw/fh;
+    document.getElementById('t2_targetW').value=fw;
+    document.getElementById('t2_targetH').value=fh;
+    t2Crop={x:0,y:0,w:fw,h:fh};
+    document.getElementById('t2_infoFrames').innerText=frames.length;
+    gifStage.classList.add('has-gif');
+    t2EnableButtons();
+    t2UpdateSourceCanvas();
+    t2LiveProcess();
+    currentFrame=0;
+  }catch(err){
+    console.error('GIF extraction failed:',err);
+    document.getElementById('t2_status').innerText='error loading gif';
+  }
+}
+
+function t2EnableButtons(){
+  ['t2_applyBtn','t2_flipHBtn','t2_flipVBtn','t2_rotateBtn',
+   't2_playBtn','t2_prevFrameBtn','t2_nextFrameBtn','t2_convertBtn'].forEach(id=>{
+    document.getElementById(id).disabled=false;
+  });
+}
+
+async function extractGifFramesWithImageDecoder(buffer){
+  const decoder=new ImageDecoder({data:buffer,type:'image/gif'});
+  await decoder.tracks.ready;
+  const track=decoder.tracks.selectedTrack;
+  const frameCount=track&&track.frameCount?track.frameCount:1;
+  const frames=[];
+  for(let i=0;i<frameCount;i++){
+    const result=await decoder.decode({frameIndex:i,completeFramesOnly:true});
+    const frame=result.image;
+    const c=document.createElement('canvas'); c.width=frame.displayWidth||frame.codedWidth; c.height=frame.displayHeight||frame.codedHeight;
+    c.getContext('2d').drawImage(frame,0,0); frame.close(); frames.push(c);
+  }
+  if(typeof decoder.close==='function') decoder.close();
+  return frames;
+}
+
+// ── APPLY — bakes current crop/resize INTO source frames (like Image Editor apply) ──
+document.getElementById('t2_applyBtn').onclick=()=>{
+  if(!currentFrames.length) return;
+  const mode=document.getElementById('t2_mode').value;
+  const tw=parseInt(document.getElementById('t2_targetW').value)||128;
+  const th=parseInt(document.getElementById('t2_targetH').value)||64;
+  t2PushHistory();
+  currentFrames=currentFrames.map(fc=>{
+    const ac=document.createElement('canvas'); ac.width=tw; ac.height=th;
+    const ctx=ac.getContext('2d');
+    if(mode==='crop') ctx.drawImage(fc,t2Crop.x,t2Crop.y,t2Crop.w,t2Crop.h,0,0,tw,th);
+    else ctx.drawImage(fc,0,0,fc.width,fc.height,0,0,tw,th);
+    return ac;
+  });
+  // After baking, reset crop box to full new size
+  t2Crop={x:0,y:0,w:tw,h:th};
+  t2AspectRatio=tw/th;
+  document.getElementById('t2_infoSize').innerText=`${tw}×${th}`;
+  document.getElementById('t2_infoFrames').innerText=currentFrames.length;
+  // Update history with new baked state
+  historyStack[historyStack.length-1]={frames:snapshotFrames(currentFrames),delays:[...currentDelays]};
+  t2UpdateSourceCanvas(); t2LiveProcess();
+};
+
+// ── FLIP H ──
+document.getElementById('t2_flipHBtn').onclick=()=>{
+  if(!currentFrames.length) return;
+  t2PushHistory();
+  currentFrames=currentFrames.map(fc=>{
+    const ac=document.createElement('canvas'); ac.width=fc.width; ac.height=fc.height;
+    const ctx=ac.getContext('2d'); ctx.translate(ac.width,0); ctx.scale(-1,1); ctx.drawImage(fc,0,0); return ac;
+  });
+  t2UpdateSourceCanvas(); t2LiveProcess();
+};
+
+// ── FLIP V ──
+document.getElementById('t2_flipVBtn').onclick=()=>{
+  if(!currentFrames.length) return;
+  t2PushHistory();
+  currentFrames=currentFrames.map(fc=>{
+    const ac=document.createElement('canvas'); ac.width=fc.width; ac.height=fc.height;
+    const ctx=ac.getContext('2d'); ctx.translate(0,ac.height); ctx.scale(1,-1); ctx.drawImage(fc,0,0); return ac;
+  });
+  t2UpdateSourceCanvas(); t2LiveProcess();
+};
+
+// ── ROTATE 90° ──
+document.getElementById('t2_rotateBtn').onclick=()=>{
+  if(!currentFrames.length) return;
+  t2PushHistory();
+  currentFrames=currentFrames.map(fc=>{
+    const ac=document.createElement('canvas'); ac.width=fc.height; ac.height=fc.width;
+    const ctx=ac.getContext('2d'); ctx.translate(ac.width,0); ctx.rotate(Math.PI/2); ctx.drawImage(fc,0,0); return ac;
+  });
+  // Swap crop box dims
+  const fw=currentFrames[0].width, fh=currentFrames[0].height;
+  t2AspectRatio=fw/fh;
+  document.getElementById('t2_targetW').value=fw;
+  document.getElementById('t2_targetH').value=fh;
+  t2Crop={x:0,y:0,w:fw,h:fh};
+  document.getElementById('t2_infoSize').innerText=`${fw}×${fh}`;
+  t2UpdateSourceCanvas(); t2LiveProcess();
+};
+
+// ── RESET ──
+document.getElementById('t2_resetBtn').onclick=()=>{
+  clearInterval(playTimer); isPlaying=false;
+  document.getElementById('t2_playBtn').textContent='▶ PLAY';
+  currentFrames=[]; currentDelays=[]; processedFrames=[];
+  historyStack=[]; redoStack=[];
+  originalSnapshot=null;
+  srcCanvas.style.display='none';
+  gifStage.classList.remove('has-gif');
+  document.getElementById('t2_framesScroll').innerHTML='<span class="frames-empty">Load a GIF to see all frames here</span>';
+  document.getElementById('t2_status').innerText='no gif loaded';
+  ['t2_applyBtn','t2_flipHBtn','t2_flipVBtn','t2_rotateBtn',
+   't2_playBtn','t2_prevFrameBtn','t2_nextFrameBtn','t2_convertBtn',
+   't2_undoBtn','t2_redoBtn'].forEach(id=>document.getElementById(id).disabled=true);
+  document.getElementById('t2_output').value='';
+  document.getElementById('t2_frameCounter').innerText='0 / 0';
+  document.getElementById('t2_progressFill').style.width='0%';
+  document.getElementById('t2_gifDim').innerText='—';
+  ['t2_infoSize','t2_infoFrames','t2_infoOut','t2_infoOutFrames'].forEach(id=>document.getElementById(id).innerText='—');
+  document.getElementById('t2_fileInput').value='';
+  prevCanvas.width=1; prevCanvas.height=1;
+  if(gifObjectURL){ URL.revokeObjectURL(gifObjectURL); gifObjectURL=null; }
+};
+
+// ── LIVE PROCESS — sample+resize/crop into processedFrames ──
+function t2LiveProcess(){
+  if(!currentFrames.length) return;
+  const tw=parseInt(document.getElementById('t2_targetW').value)||128;
+  const th=parseInt(document.getElementById('t2_targetH').value)||64;
+  const mode=document.getElementById('t2_mode').value;
+  const fps=parseInt(document.getElementById('t2_fps').value)||10;
+  const sampledIndices=t2BuildSampledFrameIndices();
+  processedFrames=sampledIndices.map(fi=>{
+    const fc=currentFrames[fi];
+    const ac=document.createElement('canvas'); ac.width=tw; ac.height=th;
+    const ctx=ac.getContext('2d');
+    if(mode==='crop') ctx.drawImage(fc,t2Crop.x,t2Crop.y,t2Crop.w,t2Crop.h,0,0,tw,th);
+    else ctx.drawImage(fc,0,0,fc.width,fc.height,0,0,tw,th);
+    return ac;
+  });
+  document.getElementById('t2_infoOut').innerText=`${tw}×${th}`;
+  document.getElementById('t2_infoOutFrames').innerText=processedFrames.length;
+  document.getElementById('t2_status').innerText=`${processedFrames.length} frame${processedFrames.length!==1?'s':''} @ ${fps}fps`;
+  renderFrameStrip();
+  const cf=Math.min(currentFrame,processedFrames.length-1);
+  showFrame(cf);
+}
+
+function t2BuildSampledFrameIndices(){
+  if(!currentFrames.length) return [];
+  const fps=parseInt(document.getElementById('t2_fps').value)||10;
+  const maxFrames=parseInt(document.getElementById('t2_maxFrames').value)||0;
+  const safeDelays=currentFrames.map((_,i)=>clampGifDelay(currentDelays[i]));
+  let indices=[];
+  if(currentFrames.length===1){ indices=[0]; }
+  else if(fps>0){
+    const interval=1000/fps;
+    const totalDuration=safeDelays.reduce((s,v)=>s+v,0);
+    if(Number.isFinite(interval)&&interval>0&&totalDuration>0){
+      let frameIndex=0, frameEnd=safeDelays[0], guard=0;
+      for(let t=0;t<totalDuration&&guard<200000;t+=interval,guard++){
+        while(frameIndex<safeDelays.length-1&&t>=frameEnd){frameIndex++;frameEnd+=safeDelays[frameIndex];}
+        indices.push(frameIndex);
+      }
+    }
+  }
+  if(!indices.length) indices=currentFrames.map((_,i)=>i);
+  if(maxFrames>0&&indices.length>maxFrames){
+    const out=[], last=indices.length-1;
+    for(let i=0;i<maxFrames;i++) out.push(indices[Math.round((i*last)/(maxFrames-1))]);
+    indices=out;
+  }
+  return indices;
+}
+
+// ── Apply adjustments + dither ──
+function applyAdjustments(fc){
+  const tw=fc.width, th=fc.height;
+  const ac=document.createElement('canvas'); ac.width=tw; ac.height=th;
+  const actx=ac.getContext('2d'); actx.drawImage(fc,0,0);
+  let imgd=actx.getImageData(0,0,tw,th); let d=imgd.data;
+  const bright=parseInt(document.getElementById('t2_brightness').value);
+  const cont=parseInt(document.getElementById('t2_contrast').value);
+  const gammaVal=parseInt(document.getElementById('t2_gamma').value)/100;
+  const factor=(259*(cont+255))/(255*(259-cont));
+  const gammaLUT=new Uint8Array(256);
+  for(let i=0;i<256;i++) gammaLUT[i]=Math.min(255,Math.round(Math.pow(i/255,1/gammaVal)*255));
+  for(let i=0;i<d.length;i+=4){
+    let r=gammaLUT[d[i]],g=gammaLUT[d[i+1]],b=gammaLUT[d[i+2]];
+    r=Math.min(255,Math.max(0,r+bright)); g=Math.min(255,Math.max(0,g+bright)); b=Math.min(255,Math.max(0,b+bright));
+    r=Math.min(255,Math.max(0,factor*(r-128)+128));
+    g=Math.min(255,Math.max(0,factor*(g-128)+128));
+    b=Math.min(255,Math.max(0,factor*(b-128)+128));
+    d[i]=r; d[i+1]=g; d[i+2]=b;
+  }
+  if(t2DisplayMode==='oled'){
+    const threshold=parseInt(document.getElementById('t2_threshold').value);
+    const invert=document.getElementById('t2_invert').checked;
+    const grayArr=new Float32Array(tw*th);
+    for(let i=0;i<tw*th;i++) grayArr[i]=(d[i*4]+d[i*4+1]+d[i*4+2])/3;
+    const bwArr=new Uint8Array(tw*th);
+    if(t2Dither==='floyd'){const err=new Float32Array(tw*th);for(let y=0;y<th;y++)for(let x=0;x<tw;x++){const idx=y*tw+x;let gray=grayArr[idx]+err[idx];const px=gray<threshold?0:255;bwArr[idx]=px;const e=gray-px;if(x+1<tw)err[idx+1]+=e*7/16;if(y+1<th){if(x>0)err[idx+tw-1]+=e*3/16;err[idx+tw]+=e*5/16;if(x+1<tw)err[idx+tw+1]+=e*1/16;}}}
+    else if(t2Dither==='ordered'){const M=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];for(let y=0;y<th;y++)for(let x=0;x<tw;x++){const t=(M[(y%4)*4+(x%4)]/16)*255;bwArr[y*tw+x]=grayArr[y*tw+x]>t?255:0;}}
+    else if(t2Dither==='atkinson'){const err2=new Float32Array(tw*th);for(let y=0;y<th;y++)for(let x=0;x<tw;x++){const idx=y*tw+x;let gray=grayArr[idx]+err2[idx];const px=gray<threshold?0:255;bwArr[idx]=px;const e=(gray-px)/8;if(x+1<tw)err2[idx+1]+=e;if(x+2<tw)err2[idx+2]+=e;if(y+1<th){if(x>0)err2[idx+tw-1]+=e;err2[idx+tw]+=e;if(x+1<tw)err2[idx+tw+1]+=e;}if(y+2<th)err2[idx+tw*2]+=e;}}
+    else{for(let i=0;i<tw*th;i++)bwArr[i]=grayArr[i]<threshold?0:255;}
+    for(let i=0;i<tw*th;i++){let v=bwArr[i]<128?0:255;if(invert)v=255-v;d[i*4]=d[i*4+1]=d[i*4+2]=v;}
+  }
+  actx.putImageData(imgd,0,0); return ac;
+}
+
+// ── Frame strip thumbnails ──
+function renderFrameStrip(){
+  const scroll=document.getElementById('t2_framesScroll'); scroll.innerHTML='';
+  processedFrames.forEach((fc,i)=>{
+    const wrap=document.createElement('div'); wrap.className='frame-thumb'+(i===currentFrame?' selected':'');
+    wrap.onclick=()=>showFrame(i);
+    const disp=applyAdjustments(fc);
+    const tc=document.createElement('canvas'); tc.width=disp.width; tc.height=disp.height;
+    tc.getContext('2d').drawImage(disp,0,0);
+    const idx=document.createElement('span'); idx.className='frame-idx'; idx.textContent=i;
+    wrap.appendChild(tc); wrap.appendChild(idx); scroll.appendChild(wrap);
+  });
+}
+
+// ── Show single frame in stage + sidebar preview ──
+function showFrame(idx){
+  currentFrame=idx;
+  const fc=processedFrames[idx]; if(!fc) return;
+  document.querySelectorAll('.frame-thumb').forEach((t,i)=>t.classList.toggle('selected',i===idx));
+  const disp=applyAdjustments(fc);
+  prevCanvas.width=disp.width; prevCanvas.height=disp.height;
+  prevCanvas.getContext('2d').drawImage(disp,0,0);
+  // Also update the source canvas to show which source frame we're on
+  t2UpdateSourceCanvas();
+  const pct=processedFrames.length>1?idx/(processedFrames.length-1)*100:100;
+  document.getElementById('t2_progressFill').style.width=pct+'%';
+  document.getElementById('t2_frameCounter').innerText=`${idx+1} / ${processedFrames.length}`;
+}
+
+function t2RefreshCurrentFrame(){
+  if(!processedFrames.length) return;
+  showFrame(currentFrame);
+  renderFrameStrip();
+}
+
+// ── Playback ──
+document.getElementById('t2_playBtn').onclick=()=>{
+  if(isPlaying){clearInterval(playTimer);isPlaying=false;document.getElementById('t2_playBtn').textContent='▶ PLAY';}
+  else{
+    isPlaying=true; document.getElementById('t2_playBtn').textContent='⏸ PAUSE';
+    const fps=parseInt(document.getElementById('t2_fps').value)||10;
+    playTimer=setInterval(()=>{currentFrame=(currentFrame+1)%processedFrames.length;showFrame(currentFrame);},1000/fps);
+  }
+};
+document.getElementById('t2_prevFrameBtn').onclick=()=>{if(processedFrames.length)showFrame((currentFrame-1+processedFrames.length)%processedFrames.length);};
+document.getElementById('t2_nextFrameBtn').onclick=()=>{if(processedFrames.length)showFrame((currentFrame+1)%processedFrames.length);};
+
+// ── Convert to C array ──
+document.getElementById('t2_convertBtn').onclick=()=>{
+  if(!processedFrames.length) return;
+  const tw=processedFrames[0].width, th=processedFrames[0].height;
+  const fps=parseInt(document.getElementById('t2_fps').value)||10;
+  const modeLabel=t2DisplayMode==='tft'?'RGB565':'1-bit OLED';
+  let out=`// GIF Animation — ${modeLabel}\n// ${tw}x${th} @ ${fps}fps — ${processedFrames.length} frames\n\n`;
+  processedFrames.forEach((fc,fi)=>{
+    const disp=applyAdjustments(fc);
+    const actx=disp.getContext('2d'); let imgd=actx.getImageData(0,0,tw,th); let d=imgd.data;
+    if(t2DisplayMode==='tft'){
+      out+=`const unsigned short frame_${fi}[] = {\n  `;
+      for(let y=0;y<th;y++){for(let x=0;x<tw;x++){const i=(y*tw+x)*4;const rgb565=((d[i]>>3)<<11)|((d[i+1]>>2)<<5)|(d[i+2]>>3);out+='0x'+rgb565.toString(16).toUpperCase().padStart(4,'0')+', ';}out+='\n  ';}
+      out+='};\n\n';
+    }else{
+      const invert=document.getElementById('t2_invert').checked;
+      out+=`const unsigned char frame_${fi}[] = {\n  `;
+      for(let y=0;y<th;y++){let byte=0,bits=0;for(let x=0;x<tw;x++){let pixel=d[(y*tw+x)*4]<128?1:0;if(invert)pixel=pixel?0:1;byte=(byte<<1)|pixel;bits++;if(bits===8){out+='0x'+byte.toString(16).padStart(2,'0')+', ';byte=0;bits=0;}}if(bits>0){byte<<=(8-bits);out+='0x'+byte.toString(16).padStart(2,'0')+', ';}}
+      out+='\n};\n\n';
+    }
+  });
+  out+=(t2DisplayMode==='tft'?'const unsigned short* frames[] = {\n  ':'const unsigned char* frames[] = {\n  ');
+  out+=processedFrames.map((_,i)=>`frame_${i}`).join(', ')+'\n};\n';
+  out+=`const int frame_count = ${processedFrames.length};\n`;
+  out+=`const int frame_delay_ms = ${Math.round(1000/fps)}; // ${fps} fps\n`;
+  document.getElementById('t2_output').value=out;
+};
+
+document.getElementById('t2_copyBtn').onclick=()=>{
+  const txt=document.getElementById('t2_output').value; if(!txt) return;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById('t2_copyBtn');
+    btn.textContent='COPIED!'; btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='COPY';btn.classList.remove('copied');},2000);
+  });
+};
+
+// ── GIF parser helpers ──
+function parseGifTimingMetadata(data){
+  try{
+    if(data[0]!==71||data[1]!==73||data[2]!==70) return{delays:[]};
+    let pos=13; const packed=data[10]; const gctFlag=(packed>>7)&1; const gctSize=packed&7;
+    if(gctFlag) pos+=(1<<(gctSize+1))*3;
+    const delays=[]; let pendingDelay=100;
+    while(pos<data.length){const block=data[pos++]; if(block===0x3B) break;
+      if(block===0x21){const label=data[pos++];
+        if(label===0xF9){const blockSize=data[pos++];if(blockSize===4){pos++;const delay=(data[pos]|(data[pos+1]<<8))*10;pos+=2;pos++;if(pos<data.length)pos++;pendingDelay=delay||100;}else{pos+=blockSize;if(pos<data.length)pos++;}}
+        else{const sk=readSubBlocks(data,pos);pos=sk.pos;}continue;}
+      if(block===0x2C){pos+=8;const flags=data[pos++];const lctFlag=(flags>>7)&1;const lctSize=flags&7;if(lctFlag)pos+=(1<<(lctSize+1))*3;pos++;const sk=readSubBlocks(data,pos);pos=sk.pos;delays.push(pendingDelay||100);pendingDelay=100;}}
+    return{delays};
+  }catch(e){return{delays:[]};}
+}
+function readSubBlocks(data,pos){const chunks=[];while(pos<data.length&&data[pos]!==0){const len=data[pos++];for(let i=0;i<len&&pos<data.length;i++)chunks.push(data[pos++]);}if(pos<data.length&&data[pos]===0)pos++;return{bytes:chunks,pos};}
+function deinterlacePixels(pixels,width,height){const out=new Array(width*height);const offsets=[0,4,2,1];const steps=[8,8,4,2];let src=0;for(let pass=0;pass<4;pass++)for(let y=offsets[pass];y<height;y+=steps[pass])for(let x=0;x<width;x++)out[y*width+x]=pixels[src++];return out;}
+function parseGIF(data){
+  try{
+    if(data[0]!==71||data[1]!==73||data[2]!==70) return null;
+    const w=data[6]|(data[7]<<8),h=data[8]|(data[9]<<8);
+    const packed=data[10];const gctFlag=(packed>>7)&1;const gctSize=packed&7;
+    let pos=13;let gct=null;
+    if(gctFlag){gct=[];for(let i=0;i<(1<<(gctSize+1));i++){gct.push([data[pos],data[pos+1],data[pos+2]]);pos+=3;}}
+    const frames=[];let gce={disposal:0,delay:100,transIndex:-1};
+    const compositeCanvas=document.createElement('canvas');compositeCanvas.width=w;compositeCanvas.height=h;
+    const compositeCtx=compositeCanvas.getContext('2d');compositeCtx.clearRect(0,0,w,h);
+    while(pos<data.length){
+      const block=data[pos++];if(block===0x3B)break;
+      if(block===0x21){const label=data[pos++];
+        if(label===0xF9){const blockSize=data[pos++];if(blockSize!==4){pos+=blockSize;if(pos<data.length)pos++;continue;}const flags=data[pos++];const delay=(data[pos]|(data[pos+1]<<8))*10;pos+=2;const ti=data[pos++];if(pos<data.length)pos++;gce={disposal:(flags>>2)&7,delay:delay||100,transIndex:(flags&1)?ti:-1};}
+        else{const sk=readSubBlocks(data,pos);pos=sk.pos;}continue;}
+      if(block!==0x2C)continue;
+      const ix=data[pos]|(data[pos+1]<<8);pos+=2;const iy=data[pos]|(data[pos+1]<<8);pos+=2;const iw=data[pos]|(data[pos+1]<<8);pos+=2;const ih=data[pos]|(data[pos+1]<<8);pos+=2;
+      const flags=data[pos++];const lctFlag=(flags>>7)&1;const interlaced=(flags&0x40)!==0;const lctSize=flags&7;
+      let ct=gct;if(lctFlag){ct=[];for(let i=0;i<(1<<(lctSize+1));i++){ct.push([data[pos],data[pos+1],data[pos+2]]);pos+=3;}}
+      const minCode=data[pos++];const subBlocks=readSubBlocks(data,pos);pos=subBlocks.pos;
+      let pixels=lzwDecode(minCode,subBlocks.bytes);if(!pixels||!pixels.length)continue;
+      if(interlaced)pixels=deinterlacePixels(pixels,iw,ih);
+      const beforeFrame=copyCanvas(compositeCanvas);const frameCanvas=copyCanvas(compositeCanvas);const frameCtx=frameCanvas.getContext('2d');const imgd=frameCtx.getImageData(0,0,w,h);
+      for(let py=0;py<ih;py++)for(let px=0;px<iw;px++){const pi=py*iw+px;const ci=pixels[pi];if(ci===undefined||ci===gce.transIndex)continue;const col=ct&&ct[ci]?ct[ci]:[0,0,0];const destX=ix+px,destY=iy+py;if(destX<0||destX>=w||destY<0||destY>=h)continue;const bi=(destY*w+destX)*4;imgd.data[bi]=col[0];imgd.data[bi+1]=col[1];imgd.data[bi+2]=col[2];imgd.data[bi+3]=255;}
+      frameCtx.putImageData(imgd,0,0);frames.push(frameCanvas);
+      compositeCtx.clearRect(0,0,w,h);
+      if(gce.disposal===2){compositeCtx.drawImage(frameCanvas,0,0);const ctx2=compositeCanvas.getContext('2d');ctx2.clearRect(ix,iy,iw,ih);}
+      else if(gce.disposal===3)compositeCtx.drawImage(beforeFrame,0,0);
+      else compositeCtx.drawImage(frameCanvas,0,0);
+      gce={disposal:0,delay:100,transIndex:-1};if(frames.length>=300)break;
+    }
+    return frames.length?frames:null;
+  }catch(e){console.error('GIF parse error',e);return null;}
+}
+function lzwDecode(minCode,data){
+  const clearCode=1<<minCode,eoi=clearCode+1;
+  let codeSize=minCode+1,mask=(1<<codeSize)-1;
+  const dict=[];for(let i=0;i<clearCode;i++)dict[i]=[i];dict[clearCode]=[];dict[eoi]=[];
+  let bits=0,buf=0,pos=0;
+  function readCode(){while(bits<codeSize&&pos<data.length){buf|=data[pos++]<<bits;bits+=8;}const c=buf&mask;buf>>=codeSize;bits-=codeSize;return c;}
+  const out=[];let prev=null;
+  while(true){const code=readCode();if(code===clearCode){dict.length=eoi+1;codeSize=minCode+1;mask=(1<<codeSize)-1;prev=null;continue;}if(code===eoi)break;let entry;if(code<dict.length)entry=dict[code].slice();else if(code===dict.length&&prev)entry=[...dict[prev],dict[prev][0]];else break;for(const p of entry)out.push(p);if(prev!==null&&dict.length<4096){dict.push([...dict[prev],entry[0]]);if(dict.length>(1<<codeSize)&&codeSize<12){codeSize++;mask=(1<<codeSize)-1;}}prev=code;}
+  return out;
+}
+
+})();
+
+/* ╔═══════════════════════════════════════════════════════╗
+   ║  TAB 3 — ARRAY VIEWER                                ║
+   ╚═══════════════════════════════════════════════════════╝ */
+(function(){
+let t3Fmt='oled1bit',t3Zoom=4;
+document.querySelectorAll('.t3-fmt').forEach(chip=>{chip.onclick=()=>{document.querySelectorAll('.t3-fmt').forEach(c=>c.classList.remove('active'));chip.classList.add('active');t3Fmt=chip.dataset.fmt;document.getElementById('t3_oledOpts').style.display=(t3Fmt==='oled1bit')?'':'none';};});
+document.getElementById('t3_zoomIn').onclick=()=>{t3Zoom=Math.min(16,t3Zoom+1);document.getElementById('t3_zoomVal').innerText=t3Zoom+'×';renderT3();};
+document.getElementById('t3_zoomOut').onclick=()=>{t3Zoom=Math.max(1,t3Zoom-1);document.getElementById('t3_zoomVal').innerText=t3Zoom+'×';renderT3();};
+document.getElementById('t3_invertBits').onchange=()=>renderT3();
+document.getElementById('t3_bgColor').oninput=()=>renderT3();
+document.getElementById('t3_fgColor').oninput=()=>renderT3();
+document.getElementById('t3_renderBtn').onclick=()=>renderT3();
+document.getElementById('t3_clearBtn').onclick=()=>{document.getElementById('arrayInput').value='';document.getElementById('arrayInput').className='';document.getElementById('t3_renderCanvas').style.display='none';document.getElementById('t3_renderStage').setAttribute('data-placeholder','PASTE ARRAY AND CLICK RENDER');document.getElementById('t3_validateMsg').innerText='paste array and click render';document.getElementById('t3_validateMsg').className='';['t3_infoW','t3_infoH','t3_infoBytes','t3_infoFmt'].forEach(id=>document.getElementById(id).innerText='—');};
+function parseArray(text){const nums=[];const re=/0x([0-9A-Fa-f]+)|(\d+)/g;let m;while((m=re.exec(text))!==null){if(m[1]!==undefined)nums.push(parseInt(m[1],16));else nums.push(parseInt(m[2],10));}return nums;}
+function tryExtractDims(text){const m=text.match(/(\d+)\s*[xX×]\s*(\d+)/);if(m)return{w:parseInt(m[1]),h:parseInt(m[2])};return null;}
+let lastPixels=null,lastW=0,lastH=0;
+function renderT3(){
+  const text=document.getElementById('arrayInput').value.trim();if(!text)return;
+  const autoD=tryExtractDims(text);
+  if(autoD){const wi=document.getElementById('t3_width');const hi=document.getElementById('t3_height');if(autoD.w>0&&autoD.w<4096)wi.value=autoD.w;if(autoD.h>0&&autoD.h<4096)hi.value=autoD.h;}
+  const W=parseInt(document.getElementById('t3_width').value)||128;const H=parseInt(document.getElementById('t3_height').value)||64;
+  const nums=parseArray(text);
+  if(!nums.length){document.getElementById('arrayInput').className='invalid';document.getElementById('t3_validateMsg').innerText='✕ no valid numbers found';document.getElementById('t3_validateMsg').className='validate-msg err';return;}
+  const pixels=new Uint8ClampedArray(W*H*4);let ok=true;
+  if(t3Fmt==='oled1bit'){const invert=document.getElementById('t3_invertBits').checked;const bg=hexToRgb(document.getElementById('t3_bgColor').value);const fg=hexToRgb(document.getElementById('t3_fgColor').value);const bytesPerRow=Math.ceil(W/8);const needed=bytesPerRow*H;if(nums.length<needed)ok=false;for(let y=0;y<H;y++)for(let x=0;x<W;x++){const byteIdx=y*bytesPerRow+Math.floor(x/8);const bitIdx=7-(x%8);const byte=nums[byteIdx]||0;let bit=(byte>>bitIdx)&1;if(invert)bit=bit?0:1;const col=bit?fg:bg;const pi=(y*W+x)*4;pixels[pi]=col.r;pixels[pi+1]=col.g;pixels[pi+2]=col.b;pixels[pi+3]=255;}}
+  else if(t3Fmt==='rgb565'){const needed=W*H;if(nums.length<needed)ok=false;for(let i=0;i<W*H;i++){const v=nums[i]||0;const r=((v>>11)&0x1F)<<3;const g=((v>>5)&0x3F)<<2;const b=(v&0x1F)<<3;pixels[i*4]=r;pixels[i*4+1]=g;pixels[i*4+2]=b;pixels[i*4+3]=255;}}
+  else if(t3Fmt==='rgb888'){const needed=W*H;if(nums.length<needed)ok=false;for(let i=0;i<W*H;i++){const v=nums[i]||0;pixels[i*4]=(v>>16)&0xFF;pixels[i*4+1]=(v>>8)&0xFF;pixels[i*4+2]=v&0xFF;pixels[i*4+3]=255;}}
+  else if(t3Fmt==='gray8'){const needed=W*H;if(nums.length<needed)ok=false;for(let i=0;i<W*H;i++){const v=Math.min(255,nums[i]||0);pixels[i*4]=v;pixels[i*4+1]=v;pixels[i*4+2]=v;pixels[i*4+3]=255;}}
+  lastPixels=pixels;lastW=W;lastH=H;drawScaled(pixels,W,H);
+  document.getElementById('t3_infoW').innerText=W;document.getElementById('t3_infoH').innerText=H;document.getElementById('t3_infoBytes').innerText=nums.length;document.getElementById('t3_infoFmt').innerText=t3Fmt.toUpperCase();
+  document.getElementById('arrayInput').className=ok?'valid':'invalid';
+  const msg=ok?`✓ ${W}×${H} rendered`:(`⚠ ${W}×${H} (data short: ${nums.length} values)`);
+  document.getElementById('t3_validateMsg').innerText=msg;document.getElementById('t3_validateMsg').className='validate-msg '+(ok?'ok':'err');
+  document.getElementById('t3_renderStage').setAttribute('data-placeholder','');
+}
+function drawScaled(pixels,W,H){const z=t3Zoom;const rc=document.getElementById('t3_renderCanvas');rc.width=W*z;rc.height=H*z;rc.style.display='block';const ctx=rc.getContext('2d');const tmp=document.createElement('canvas');tmp.width=W;tmp.height=H;tmp.getContext('2d').putImageData(new ImageData(pixels,W,H),0,0);ctx.imageSmoothingEnabled=false;ctx.drawImage(tmp,0,0,W*z,H*z);}
+function hexToRgb(hex){return{r:parseInt(hex.slice(1,3),16),g:parseInt(hex.slice(3,5),16),b:parseInt(hex.slice(5,7),16)};}
+document.getElementById('t3_renderCanvas').onmousemove=e=>{if(!lastPixels)return;const rc=document.getElementById('t3_renderCanvas');const rect=rc.getBoundingClientRect();const px=Math.floor((e.clientX-rect.left)/t3Zoom);const py=Math.floor((e.clientY-rect.top)/t3Zoom);if(px<0||px>=lastW||py<0||py>=lastH)return;const i=(py*lastW+px)*4;const r=lastPixels[i],g=lastPixels[i+1],b=lastPixels[i+2];const hex='#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('').toUpperCase();const rgb565=((r>>3)<<11)|((g>>2)<<5)|(b>>3);document.getElementById('t3_pixelInfo').innerHTML=`<span class="color-swatch" style="background:${hex}"></span>px(${px},${py}) RGB(${r},${g},${b}) HEX:${hex} 565:0x${rgb565.toString(16).toUpperCase().padStart(4,'0')}`;};
+document.getElementById('t3_renderCanvas').onmouseleave=()=>{document.getElementById('t3_pixelInfo').textContent='hover over image to inspect pixel';};
+})();
+</script>
+</body>
+</html>
